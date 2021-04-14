@@ -21,23 +21,31 @@ async def regen_token():
             pickle.dump((await response.json())["access_token"], write_file)
             write_file.close()
 
-async def _get_ranked_beatmaps(mode_num, *sql_dates):
+async def _get_ranked_beatmapsets(mode_num, *sql_dates):
+    with open("access_token", "rb") as f:
+        token = pickle.load(f)
+    all_maps = []
     async with aiohttp.ClientSession() as session:
-
-        async def do_api_call(sql_date):
-            async with session.get(URL + "get_beatmaps",
-                    params={
-                        "k": config.api_key,
-                        "m": mode_num,
-                        "since": sql_date
-                    }) as response:
-                beatmaps = await response.json()
-                beatmaps = [bm for bm in beatmaps if bm["approved"] == "1"]
-                return beatmaps
-
-        beatmap_fragments = await asyncio.gather(*[do_api_call(d) for d in sql_dates])
-        raw_beatmaps = list(itertools.chain(*beatmap_fragments)) # connect tuple
-        return list({bm['beatmap_id']: bm for bm in raw_beatmaps}.values()) # only unique
+        for date in sql_dates:
+            cur_page = 1
+            while True:
+                async with session.get(
+                        f"{URL}v2/beatmapsets/search",
+                        params={
+                            "m": mode_num,
+                            "s": "ranked",
+                            "q": f"created={date}",
+                            "page": cur_page
+                        },
+                        headers={
+                            "Authorization": f"Bearer {token}"
+                        }) as response:
+                    res = await response.json()
+                    all_maps.extend(res["beatmapsets"])
+                    cur_page += 1
+                    if len(res["beatmapsets"]) < 50: # last page
+                        break
+    return all_maps
 
 async def get_good_sets(mode: str, months: list[str]):
     sql_dates = []
@@ -45,26 +53,19 @@ async def get_good_sets(mode: str, months: list[str]):
         date_month, date_year = month.split("/")
         if len(date_month) == 1:
             date_month = "0" + date_month
-        sql_dates.append(f"20{date_year}-{date_month}-01")
-        sql_dates.append(f"20{date_year}-{date_month}-14")
+        sql_dates.append(f"20{date_year}-{date_month}")
 
-    mode_id = -1
     if mode == "standard":
         mode_id = 0
     elif mode == "mania":
         mode_id = 1
 
-    beatmaps = await _get_ranked_beatmaps(mode_id, *sql_dates)
+    beatmapsets = await _get_ranked_beatmapsets(mode_id, *sql_dates)
 
-    beatmap_sets = {} # maps beatmapset_id to a list of the difficulty of each map
-    for bm in beatmaps:
-        bid = int(bm["beatmapset_id"])
-        if bid not in beatmap_sets:
-            beatmap_sets[bid] = []
-        beatmap_sets[bid].append(float(bm["difficultyrating"]))
-
-    beatmap_sets = {k:v for (k, v) in beatmap_sets.items() if len(v) >= 5 and max(v) >= 6}
-    return list(beatmap_sets.keys())
+    # maps beatmapset_id to a list of the difficulty of each map
+    bmsdiffs = {bms["id"]: [bm["difficulty_rating"] for bm in bms["beatmaps"]] for bms in beatmapsets}
+    bmsdiffs = {k:v for (k, v) in bmsdiffs.items() if len(v) >= 5 and max(v) >= 6}
+    return list(bmsdiffs.keys())
 
 async def get_rank_username_id(username):
     async with aiohttp.ClientSession() as session:
@@ -113,4 +114,5 @@ async def get_recent(id):
 
 if __name__ == "__main__":
     asyncio.run(regen_token())
-    print(json.dumps(asyncio.run(get_recent(4213009)), indent=4))
+    maps = asyncio.run(get_good_sets("standard", ["1/21", "2/21"]))
+    print("a")
