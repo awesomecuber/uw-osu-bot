@@ -195,7 +195,7 @@ async def manual_check(ctx: commands.Context):
     update_state()
     await update_display()
 
-@bot.commant(name="printstate")
+@bot.command(name="printstate")
 async def print_state(ctx: commands.Context):
     if ctx.author.id != config.nico_id:
         return
