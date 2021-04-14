@@ -1,3 +1,4 @@
+import copy
 import datetime
 import os
 import logging
@@ -166,7 +167,7 @@ async def start(ctx: commands.Context, *map_ids: str):
 
     state["beatmaps"] = beatmap_state
     for player_data in (state["pros"] | state["amateurs"]).values():
-        player_data["scores"] = blank_scores.copy()
+        player_data["scores"] = copy.deepcopy(blank_scores)
     update_state()
     await update_display()
 
