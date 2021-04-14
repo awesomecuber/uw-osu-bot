@@ -246,7 +246,7 @@ async def check_player(player_id):
         if recent_score["pp"] == None:
             pp = 0
         else:
-            pp = int(recent_score["pp"])
+            pp = round(float(recent_score["pp"]))
         if player_data["scores"][beatmapset_id] < pp:
             channel = bot.get_channel(config.announce_channel)
             await channel.send(
