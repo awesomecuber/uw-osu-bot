@@ -199,7 +199,7 @@ async def manual_check(ctx: commands.Context):
 async def print_state(ctx: commands.Context):
     if ctx.author.id != config.nico_id:
         return
-    await ctx.channel.send(state)
+    print(state)
 
 
 # helper
