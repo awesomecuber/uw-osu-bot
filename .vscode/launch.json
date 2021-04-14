@@ -16,6 +16,7 @@
       "type": "python",
       "request": "launch",
       "program": "bot.py",
+      "args": ["debug"],
       "console": "integratedTerminal"
     },
     {

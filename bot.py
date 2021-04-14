@@ -3,6 +3,7 @@ import os
 import logging
 import pickle
 import random
+import sys
 from typing import TypedDict
 
 import discord
@@ -17,19 +18,24 @@ logging.basicConfig(level=logging.INFO)
 
 # types
 
+class ScoreData(TypedDict):
+    pp: int
+    sr: int
 
 class PlayerData(TypedDict):
     discord_id: int
     username: str
-    scores: dict[str, int] # beatmapset_id to score
+    scores: dict[str, ScoreData] # beatmapset_id to score
 
 class State(TypedDict):
     pros: dict[str, PlayerData] # user_id to data
     amateurs: dict[str, PlayerData] # user_id to data
-    beatmaps: list[str] # beatmapset_ids
+    beatmaps: dict[str, str] # beatmapset_ids to mod (NM if nomod)
 
-
-bot = commands.Bot(command_prefix="uw!")
+if "debug" in sys.argv:
+    bot = commands.Bot(command_prefix="a!")
+else:
+    bot = commands.Bot(command_prefix="uw!")
 state = State(pros={}, amateurs={}, beatmaps=[])
 
 
@@ -74,7 +80,9 @@ async def get_random(ctx: commands.Context, mode: str, *months: str):
     good_bmss = await apihelper.get_good_sets(mode, months)
     random.shuffle(good_bmss)
     good_bmss = good_bmss[:4]
-    message = format_bmsids(good_bmss)
+    message = ""
+    for bms in good_bmss:
+        message += f"<https://osu.ppy.sh/beatmapsets/{bms}>\n"
     await ctx.channel.send(message)
 
 @bot.command()
@@ -95,7 +103,7 @@ async def register(ctx: commands.Context, *, username: str):
     player_data = PlayerData(
         discord_id=ctx.author.id,
         username=username,
-        scores={bmsid: 0 for bmsid in state["beatmaps"]}
+        scores={bmsid: ScoreData(pp=0, sr=0) for bmsid in state["beatmaps"]}
     )
     if rank < 50000:
         state["pros"][id] = player_data
@@ -150,11 +158,13 @@ async def start(ctx: commands.Context, *map_ids: str):
     if len(state["beatmaps"]) != 0: # tourney not running
         return
 
+    beatmap_state = {}
     blank_scores = {}
     for map_id in map_ids:
-        blank_scores[map_id] = 0
+        beatmap_state[map_id[:-2]] = map_id[-2:]
+        blank_scores[map_id[:-2]] = ScoreData(pp=0, sr=0)
 
-    state["beatmaps"] = map_ids
+    state["beatmaps"] = beatmap_state
     for player_data in (state["pros"] | state["amateurs"]).values():
         player_data["scores"] = blank_scores.copy()
     update_state()
@@ -179,13 +189,9 @@ async def manual_check(ctx: commands.Context):
     if ctx.author.id != config.nico_id:
         return
 
-    identity = get_player_by_discord_id(ctx.author.id)
-    if len(identity) == 0:
-        await ctx.channel.send("You're not registered!")
-        return
-
-    id = identity[0]
-    await check_player(id)
+    for id in state["pros"] | state["amateurs"]:
+        # print(id, "score check:", datetime.datetime.now())
+        await check_player(id)
     update_state()
     await update_display()
 
@@ -215,55 +221,73 @@ async def update_display():
         amateur_names.append(state["amateurs"][amateur_id]["username"])
     message += f"Pros: {', '.join(pro_names)}\nAmateurs: {', '.join(amateur_names)}\n"
 
+    # maybe don't display maps here?
     message += "\n**BEATMAPS**\n"
-    message += format_bmsids(state["beatmaps"])
+    for bmsid, mod in state["beatmaps"].items():
+        message += f"{mod}: <https://osu.ppy.sh/beatmapsets/{bmsid}>\n"
 
     message += "\n**PRO STANDINGS**\n"
-    pro_scores = {}
 
+    pro_scores = {}
     for pro_id, pro_data in state["pros"].items():
         name = pro_data["username"]
-        pp = sum(pro_data["scores"].values())
-        pro_scores[name] = pp
-    for i, (pro_name, pro_pp) in enumerate(sorted(pro_scores.items(), key=lambda x: x[1], reverse=True)):
-        message += f"{i+1}. {pro_name} ({pro_pp}pp)\n"
+        total_score = sum(calculate_score(**score) for score in pro_data["scores"].values())
+        pro_scores[name] = total_score
+    for i, (pro_name, pro_score) in enumerate(sorted(pro_scores.items(), key=lambda x: x[1], reverse=True)):
+        message += f"{i+1}. {pro_name} ({pro_score:.1f})\n"
 
     message += "\n**AMATEUR STANDINGS**\n"
 
     amateur_scores = {}
     for amateur_id, amateur_data in state["amateurs"].items():
         name = amateur_data["username"]
-        pp = sum(amateur_data["scores"].values())
-        amateur_scores[name] = pp
-    for i, (amateur_name, amateur_pp) in enumerate(sorted(amateur_scores.items(), key=lambda x: x[1], reverse=True)):
-        message += f"{i+1}. {amateur_name} ({amateur_pp}pp)\n"
+        total_score = sum(calculate_score(**score) for score in amateur_data["scores"].values())
+        amateur_scores[name] = total_score
+    for i, (amateur_name, amateur_score) in enumerate(sorted(amateur_scores.items(), key=lambda x: x[1], reverse=True)):
+        message += f"{i+1}. {amateur_name} ({amateur_score:.1f})\n"
 
     await display_message.edit(content=message)
+
+def is_valid_play(s):
+    bmsid = str(s["beatmap"]["beatmapset_id"])
+
+    if bmsid not in state["beatmaps"]:
+        return False
+
+    if s["pp"] == None:
+        return False
+
+    map_mod = state["beatmaps"][bmsid]
+    if map_mod == "NM":
+        return len(s["mods"]) == 0
+    elif map_mod == "HR":
+        return len(s["mods"]) == 1 and s["mods"][0] == "HR"
+
+    return True # shouldn't reach here
+
+def calculate_score(pp, sr):
+    return pp * sr**2
 
 async def check_player(player_id):
     player_data = get_player_data_by_player_id(player_id)
     recent_scores = await apihelper.get_recent(player_id)
-    recent_scores = [s for s in recent_scores if str(s["beatmap"]["beatmapset_id"]) in state["beatmaps"]]
+    recent_scores = [s for s in recent_scores if is_valid_play(s)]
     for recent_score in recent_scores:
         beatmapset_id = str(recent_score["beatmap"]["beatmapset_id"])
-        if recent_score["pp"] == None:
-            pp = 0
-        else:
-            pp = round(float(recent_score["pp"]))
-        if player_data["scores"][beatmapset_id] < pp:
+        pp = round(float(recent_score["pp"]))
+        sr = recent_score["beatmap"]["difficulty_rating"]
+        score = calculate_score(pp, sr)
+        if calculate_score(**player_data["scores"][beatmapset_id]) < calculate_score(pp, sr):
             channel = bot.get_channel(config.announce_channel)
             await channel.send(
                 f"{recent_score['user']['username']} got {pp}pp " \
-                f"on \"{recent_score['beatmap']['version']}\" difficulty " \
-                f"of \"{recent_score['beatmapset']['title_unicode']}\"!"
+                f"on \"{recent_score['beatmap']['version']}\" difficulty ({sr}*) " \
+                f"of \"{recent_score['beatmapset']['title_unicode']}\"! " \
+                f"This results in a score of {score:.1f}."
             )
-            player_data["scores"][beatmapset_id] = pp
+            player_data["scores"][beatmapset_id]["pp"] = pp
+            player_data["scores"][beatmapset_id]["sr"] = sr
 
-def format_bmsids(bmsids):
-    message = ""
-    for bms in bmsids:
-        message += f"<https://osu.ppy.sh/beatmapsets/{bms}>\n"
-    return message
 
 # state helpers
 

@@ -112,4 +112,5 @@ async def get_recent(id):
             return scores
 
 if __name__ == "__main__":
-    print(asyncio.run(get_username(5036976)))
+    asyncio.run(regen_token())
+    print(json.dumps(asyncio.run(get_recent(4213009)), indent=4))

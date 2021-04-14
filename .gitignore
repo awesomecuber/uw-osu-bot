@@ -3,3 +3,5 @@ config.py
 help.py
 state
 state-backup
+__pycache__/apihelper.cpython-39.pyc
+__pycache__/config.cpython-39.pyc
