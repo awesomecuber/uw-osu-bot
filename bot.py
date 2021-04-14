@@ -35,19 +35,19 @@ state = State(pros={}, amateurs={}, beatmaps=[])
 
 # recurrent tasks
 
-@tasks.loop(minutes=10)
+@tasks.loop(minutes=1)
 async def score_check():
     # check that tournament is running
     if len(state["beatmaps"]) == 0:
         return
 
-    print("Start score check:", datetime.datetime.now())
+    # print("Start score check:", datetime.datetime.now())
     for id in state["pros"] | state["amateurs"]:
-        print(id, "score check:", datetime.datetime.now())
+        # print(id, "score check:", datetime.datetime.now())
         await check_player(id)
     update_state()
     await update_display()
-    print("End score check:", datetime.datetime.now())
+    # print("End score check:", datetime.datetime.now())
 
 @tasks.loop(minutes=1)
 async def time_check():
@@ -176,6 +176,9 @@ async def stop(ctx: commands.Context):
 
 @bot.command(name="manualcheck")
 async def manual_check(ctx: commands.Context):
+    if ctx.author.id != config.nico_id:
+        return
+
     identity = get_player_by_discord_id(ctx.author.id)
     if len(identity) == 0:
         await ctx.channel.send("You're not registered!")
