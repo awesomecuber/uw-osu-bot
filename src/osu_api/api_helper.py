@@ -4,7 +4,7 @@ import aiohttp
 
 # file imports
 import api_config
-import api_request
+import http_request
 import token_handler
 from ..utils.sanitizer import sanitize
 
@@ -12,7 +12,7 @@ URL = "https://osu.ppy.sh/api/v2/"
 
 
 async def regen_token():
-    async with api_request.post("https://osu.ppy.sh/oauth/token", {
+    async with http_request.post("https://osu.ppy.sh/oauth/token", {
             "client_id": api_config.client_id,
             "client_secret": api_config.client_secret,
             "grant_type": "client_credentials",
@@ -71,14 +71,14 @@ async def get_good_sets(mode: str, months: list[str]):
 async def get_rank_username_id(username):
     token = token_handler.get_token()
     url = URL + f"users/{username}/osu"
-    async with api_request.get(url, {"Authorization": f"Bearer {token}"}, {"key": "username"}) as user:
+    async with http_request.get(url, {"Authorization": f"Bearer {token}"}, {"key": "username"}) as user:
         return int(user["statistics"]["global_rank"]), user["username"], user["id"]
 
 
 async def get_username(id):
     token = token_handler.get_token()
     url = URL + f"users/{id}"
-    async with api_request.get(url, {"Authorization": f"Bearer {token}"}, {"key": "id"}) as user:
+    async with http_request.get(url, {"Authorization": f"Bearer {token}"}, {"key": "id"}) as user:
         username = user["username"]
         return sanitize(username)
 
