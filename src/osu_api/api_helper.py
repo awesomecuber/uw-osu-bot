@@ -1,6 +1,5 @@
 # library imports
 import asyncio
-import aiohttp
 
 # file imports
 import api_request
@@ -15,28 +14,6 @@ async def regen_token():
         token_handler.set_token(token)
 
 
-async def _get_ranked_beatmapsets(mode_num, *sql_dates):
-    all_maps = []
-    async with aiohttp.ClientSession() as session:
-        for date in sql_dates:
-            cur_page = 1
-            while True:
-                async with session.get(URL + f"beatmapsets/search",
-                        params={
-                            "m": mode_num,
-                            "s": "ranked",
-                            "q": f"created={date}",
-                            "page": cur_page
-                        },
-                        headers=api_request.headers()) as response:
-                    res = await response.json()
-                    all_maps.extend(res["beatmapsets"])
-                    cur_page += 1
-                    if len(res["beatmapsets"]) < 50: # last page
-                        break
-    return all_maps
-
-
 async def get_good_sets(mode: str, months: list[str]):
     sql_dates = []
     for month in months:
@@ -47,7 +24,7 @@ async def get_good_sets(mode: str, months: list[str]):
 
     mode_id = modes.get_id(mode)
 
-    beatmapsets = await _get_ranked_beatmapsets(mode_id, *sql_dates)
+    beatmapsets = await api_request.get_ranked_beatmapsets(mode_id, sql_dates)
 
     # maps beatmapset_id to a list of the difficulty of each map
     bms_diffs = {bms["id"]: [bm["difficulty_rating"] for bm in bms["beatmaps"]] for bms in beatmapsets}
@@ -71,20 +48,13 @@ async def get_username(id):
 
 
 async def get_recent(id):
-    async with aiohttp.ClientSession() as session:
-        async with session.get(URL + f"users/{id}/scores/recent", headers=api_request.headers()) as response:
-            scores = await response.json()
-            return scores
+    return await api_request.get(URL + f"users/{id}/scores/recent", {})
 
 
 async def get_beatmap_names(*ids):
-    to_return = []
-    async with aiohttp.ClientSession() as session:
-        for id in ids:
-            async with session.get(URL + f"beatmapsets/{id}", headers=api_request.headers()) as response:
-                map = await response.json()
-                to_return.append(map["title"])
-    return to_return
+    urls = [URL + f"beatmapsets/{id}" for id in ids]
+    async with api_request.get_many(urls, [{} for _ in urls]) as maps:
+        return [map["title"] for map in maps]
 
 if __name__ == "__main__":
     asyncio.run(regen_token())

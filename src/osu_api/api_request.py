@@ -1,3 +1,5 @@
+import aiohttp
+
 import api_config
 import http_request
 import token_handler
@@ -21,3 +23,30 @@ def headers():
 async def get(url, params):
     async with http_request.get(url, headers(), params) as result:
         return result
+
+
+async def get_many(urls, params):
+    async with http_request.get_many(urls, [headers() for _ in urls], params) as result:
+        return result
+
+
+async def get_ranked_beatmapsets(mode_num, sql_dates):
+    all_maps = []
+    async with aiohttp.ClientSession() as session:
+        for date in sql_dates:
+            cur_page = 1
+            while True:
+                async with session.get(URL + f"beatmapsets/search",
+                                       params={
+                                           "m": mode_num,
+                                           "s": "ranked",
+                                           "q": f"created={date}",
+                                           "page": cur_page
+                                       },
+                                       headers=headers()) as response:
+                    res = await response.json()
+                    all_maps.extend(res["beatmapsets"])
+                    cur_page += 1
+                    if len(res["beatmapsets"]) < 50:  # last page
+                        break
+    return all_maps
