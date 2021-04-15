@@ -3,7 +3,7 @@ import asyncio
 import aiohttp
 
 # file imports
-import config
+import api_config
 import token_handler
 
 URL = "https://osu.ppy.sh/api/v2/"
@@ -12,8 +12,8 @@ URL = "https://osu.ppy.sh/api/v2/"
 async def regen_token():
     async with aiohttp.ClientSession() as session:
         async with session.post("https://osu.ppy.sh/oauth/token", data={
-            "client_id": config.client_id,
-            "client_secret": config.client_secret,
+            "client_id": api_config.client_id,
+            "client_secret": api_config.client_secret,
             "grant_type": "client_credentials",
             "scope": "public"
         }) as response:
