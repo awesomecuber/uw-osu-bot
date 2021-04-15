@@ -6,6 +6,7 @@ import aiohttp
 import api_request
 import token_handler
 from ..utils.sanitizer import sanitize
+from ..utils import modes
 
 URL = "https://osu.ppy.sh/api/v2/"
 
@@ -45,11 +46,7 @@ async def get_good_sets(mode: str, months: list[str]):
             date_month = "0" + date_month
         sql_dates.append(f"20{date_year}-{date_month}")
 
-    mode_id = 0
-    if mode == "standard":
-        mode_id = 0
-    elif mode == "mania":
-        mode_id = 1
+    mode_id = modes.get_id(mode)
 
     beatmapsets = await _get_ranked_beatmapsets(mode_id, *sql_dates)
 
