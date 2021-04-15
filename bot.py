@@ -28,10 +28,14 @@ class PlayerData(TypedDict):
     username: str
     scores: dict[str, ScoreData] # beatmapset_id to score
 
+class BeatmapData(TypedDict):
+    title: str
+    mod: str
+
 class State(TypedDict):
     pros: dict[str, PlayerData] # user_id to data
     amateurs: dict[str, PlayerData] # user_id to data
-    beatmaps: dict[str, str] # beatmapset_ids to mod (NM if nomod)
+    beatmaps: dict[str, BeatmapData] # beatmapset_ids to data
 
 if "debug" in sys.argv:
     bot = commands.Bot(command_prefix="a!")
@@ -46,6 +50,7 @@ state = State(pros={}, amateurs={}, beatmaps=[])
 async def score_check():
     # check that tournament is running
     if len(state["beatmaps"]) == 0:
+        await update_display()
         return
 
     # print("Start score check:", datetime.datetime.now())
@@ -149,8 +154,9 @@ async def identify(ctx: commands.Context):
     username = await apihelper.get_username(id)
     await ctx.channel.send(f"Registered as {username}.")
 
+# a set_code is the mapset id concatenated with the mod, like "294227NM"
 @bot.command(name="start")
-async def start(ctx: commands.Context, *map_ids: str):
+async def start(ctx: commands.Context, *set_codes: str):
     if ctx.author.id != config.nico_id:
         return
 
@@ -161,9 +167,11 @@ async def start(ctx: commands.Context, *map_ids: str):
 
     beatmap_state = {}
     blank_scores = {}
-    for map_id in map_ids:
-        beatmap_state[map_id[:-2]] = map_id[-2:]
-        blank_scores[map_id[:-2]] = ScoreData(pp=0, sr=0)
+
+    beatmap_names = await apihelper.get_beatmap_names(*[set_code[:-2] for set_code in set_codes])
+    for set_code, map_name in zip(set_codes, beatmap_names):
+        beatmap_state[set_code[:-2]] = BeatmapData(title=map_name, mod=set_code[-2:])
+        blank_scores[set_code[:-2]] = ScoreData(pp=0, sr=0)
 
     state["beatmaps"] = beatmap_state
     for player_data in (state["pros"] | state["amateurs"]).values():
@@ -228,10 +236,9 @@ async def update_display():
         amateur_names.append(state["amateurs"][amateur_id]["username"])
     message += f"Pros: {', '.join(pro_names)}\nAmateurs: {', '.join(amateur_names)}\n"
 
-    # maybe don't display maps here?
     message += "\n**BEATMAPS**\n"
-    for bmsid, mod in state["beatmaps"].items():
-        message += f"{mod}: <https://osu.ppy.sh/beatmapsets/{bmsid}>\n"
+    for bmsid, bmsdata in state["beatmaps"].items():
+        message += f"{bmsdata['mod']}: <https://osu.ppy.sh/beatmapsets/{bmsid}> ({bmsdata['title']})\n"
 
     message += "\n**PRO STANDINGS**\n"
 
@@ -264,7 +271,7 @@ def is_valid_play(s):
     if s["pp"] == None:
         return False
 
-    map_mod = state["beatmaps"][bmsid]
+    map_mod = state["beatmaps"][bmsid]["mod"]
     if map_mod == "NM":
         return len(s["mods"]) == 0
     elif map_mod == "HR":

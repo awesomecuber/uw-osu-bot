@@ -4,3 +4,4 @@ help.py
 state
 state-backup
 __pycache__
+convert_beatmaps.py

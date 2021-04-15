@@ -2,7 +2,6 @@
 
 If you wanna run the bot for whatever reason, you'll need to create file `state.py` with the following variables:
 
-- api_key: osu!api v1 key
 - bot_token: discord bot token
 - client_id: osu!api v2 client id
 - client_secret: osu!api v2 client secret

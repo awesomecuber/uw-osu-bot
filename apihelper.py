@@ -7,7 +7,7 @@ import aiohttp
 
 import config
 
-URL = "https://osu.ppy.sh/api/"
+URL = "https://osu.ppy.sh/api/v2/"
 
 async def regen_token():
     async with aiohttp.ClientSession() as session:
@@ -29,8 +29,7 @@ async def _get_ranked_beatmapsets(mode_num, *sql_dates):
         for date in sql_dates:
             cur_page = 1
             while True:
-                async with session.get(
-                        f"{URL}v2/beatmapsets/search",
+                async with session.get(URL + f"beatmapsets/search",
                         params={
                             "m": mode_num,
                             "s": "ranked",
@@ -68,33 +67,32 @@ async def get_good_sets(mode: str, months: list[str]):
     return list(bmsdiffs.keys())
 
 async def get_rank_username_id(username):
+    with open("access_token", "rb") as f:
+        token = pickle.load(f)
     async with aiohttp.ClientSession() as session:
-        async with session.get(URL + "get_user",
+        async with session.get(URL + f"users/{username}/osu",
                 params={
-                    "k": config.api_key,
-                    "u": username,
-                    "m": 0,
-                    "type": "string"
+                    "key": "username"
+                },
+                headers={
+                    "Authorization": f"Bearer {token}"
                 }) as response:
             user = await response.json()
-            if len(user) == 0:
-                raise Exception("That name doesn't exist!")
-            user = user[0]
-            return int(user["pp_rank"]), user["username"], user["user_id"]
+            return int(user["statistics"]["global_rank"]), user["username"], user["id"]
 
 async def get_username(id):
+    with open("access_token", "rb") as f:
+        token = pickle.load(f)
     async with aiohttp.ClientSession() as session:
-        async with session.get(URL + "get_user",
+        async with session.get(URL + f"users/{id}",
                 params={
-                    "k": config.api_key,
-                    "u": id,
-                    "m": 0,
-                    "type": "id"
+                    "key": "id"
+                },
+                headers={
+                    "Authorization": f"Bearer {token}"
                 }) as response:
             user = await response.json()
-            if len(user) == 0:
-                raise Exception("That name doesn't exist!")
-            username: str = user[0]["username"]
+            username: str = user["username"]
             if "_" in username:
                 underscore_index = username.index("_")
                 username = username[:underscore_index] + "\\" + username[underscore_index:]
@@ -104,15 +102,28 @@ async def get_recent(id):
     with open("access_token", "rb") as f:
         token = pickle.load(f)
     async with aiohttp.ClientSession() as session:
-        async with session.get(
-                f"{URL}v2/users/{id}/scores/recent",
+        async with session.get(URL + f"users/{id}/scores/recent",
                 headers={
                     "Authorization": f"Bearer {token}"
                 }) as response:
             scores = await response.json()
             return scores
 
+async def get_beatmap_names(*ids):
+    with open("access_token", "rb") as f:
+        token = pickle.load(f)
+    to_return = []
+    async with aiohttp.ClientSession() as session:
+        for id in ids:
+            async with session.get(URL + f"beatmapsets/{id}",
+                    headers={
+                        "Authorization": f"Bearer {token}"
+                    }) as response:
+                map = await response.json()
+                to_return.append(map["title"])
+    return to_return
+
 if __name__ == "__main__":
     asyncio.run(regen_token())
-    maps = asyncio.run(get_good_sets("standard", ["1/21", "2/21"]))
-    print("a")
+    # maps = asyncio.run(get_good_sets("standard", ["1/21", "2/21"]))
+    print(asyncio.run(get_beatmap_names(294227, 480669)))
