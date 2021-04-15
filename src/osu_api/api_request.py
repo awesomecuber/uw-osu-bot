@@ -1,12 +1,9 @@
-import asyncio
 import aiohttp
-
-import json
 
 
 async def post(url, data):
     async with aiohttp.ClientSession() as session:
-        async with session.post("https://osu.ppy.sh/oauth/token", data=data) as response:
+        async with session.post(url, data=data) as response:
             response_json = await response.json()
             return response_json
 
