@@ -3,8 +3,7 @@ import asyncio
 import aiohttp
 
 # file imports
-import api_config
-import http_request
+import api_request
 import token_handler
 from ..utils.sanitizer import sanitize
 
@@ -12,17 +11,11 @@ URL = "https://osu.ppy.sh/api/v2/"
 
 
 async def regen_token():
-    async with http_request.post("https://osu.ppy.sh/oauth/token", {
-            "client_id": api_config.client_id,
-            "client_secret": api_config.client_secret,
-            "grant_type": "client_credentials",
-            "scope": "public"
-    }) as result:
-        token_handler.set_token(result["access_token"])
+    with api_request.get_token() as token:
+        token_handler.set_token(token)
 
 
 async def _get_ranked_beatmapsets(mode_num, *sql_dates):
-    token = token_handler.get_token()
     all_maps = []
     async with aiohttp.ClientSession() as session:
         for date in sql_dates:
@@ -35,9 +28,7 @@ async def _get_ranked_beatmapsets(mode_num, *sql_dates):
                             "q": f"created={date}",
                             "page": cur_page
                         },
-                        headers={
-                            "Authorization": f"Bearer {token}"
-                        }) as response:
+                        headers=api_request.headers()) as response:
                     res = await response.json()
                     all_maps.extend(res["beatmapsets"])
                     cur_page += 1
@@ -69,40 +60,33 @@ async def get_good_sets(mode: str, months: list[str]):
 
 
 async def get_rank_username_id(username):
-    token = token_handler.get_token()
     url = URL + f"users/{username}/osu"
-    async with http_request.get(url, {"Authorization": f"Bearer {token}"}, {"key": "username"}) as user:
-        return int(user["statistics"]["global_rank"]), user["username"], user["id"]
+    async with api_request.get(url, {"key": "username"}) as user:
+        user_rank = int(user["statistics"]["global_rank"])
+        user_username = user["username"]
+        user_id = user["id"]
+        return user_rank, user_username, user_id
 
 
 async def get_username(id):
-    token = token_handler.get_token()
     url = URL + f"users/{id}"
-    async with http_request.get(url, {"Authorization": f"Bearer {token}"}, {"key": "id"}) as user:
+    async with api_request.get(url, {"key": "id"}) as user:
         username = user["username"]
         return sanitize(username)
 
 
 async def get_recent(id):
-    token = token_handler.get_token()
     async with aiohttp.ClientSession() as session:
-        async with session.get(URL + f"users/{id}/scores/recent",
-                headers={
-                    "Authorization": f"Bearer {token}"
-                }) as response:
+        async with session.get(URL + f"users/{id}/scores/recent", headers=api_request.headers()) as response:
             scores = await response.json()
             return scores
 
 
 async def get_beatmap_names(*ids):
-    token = token_handler.get_token()
     to_return = []
     async with aiohttp.ClientSession() as session:
         for id in ids:
-            async with session.get(URL + f"beatmapsets/{id}",
-                    headers={
-                        "Authorization": f"Bearer {token}"
-                    }) as response:
+            async with session.get(URL + f"beatmapsets/{id}", headers=api_request.headers()) as response:
                 map = await response.json()
                 to_return.append(map["title"])
     return to_return
