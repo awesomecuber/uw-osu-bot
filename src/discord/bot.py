@@ -12,46 +12,24 @@ from discord.ext import commands, tasks
 
 from ..osu_api import api_helper
 import bot_config
+from ..tournament import tournament_state
+from ..tournament import registration
 
 
 logging.basicConfig(level=logging.INFO)
-
-
-# types
-class ScoreData(TypedDict):
-    pp: int
-    sr: int
-
-
-class PlayerData(TypedDict):
-    discord_id: int
-    username: str
-    scores: dict[str, ScoreData]  # beatmapset_id to score
-
-
-class BeatmapData(TypedDict):
-    title: str
-    mod: str
-
-
-class State(TypedDict):
-    pros: dict[str, PlayerData]  # user_id to data
-    amateurs: dict[str, PlayerData]  # user_id to data
-    beatmaps: dict[str, BeatmapData]  # beatmapset_ids to data
 
 
 if "debug" in sys.argv:
     bot = commands.Bot(command_prefix="a!")
 else:
     bot = commands.Bot(command_prefix="uw!")
-state = State(pros={}, amateurs={}, beatmaps={})
 
 
 # recurrent tasks
 @tasks.loop(minutes=1)
 async def score_check():
     # check that tournament is running
-    if len(state["beatmaps"]) == 0:
+    if not tournament_state.is_running():
         await update_display()
         await update_detailed_display()
         return
@@ -96,33 +74,7 @@ async def get_random(ctx: commands.Context, mode: str, months: list[str]):
 
 @bot.command()
 async def register(ctx: commands.Context, *, username: str):
-    identity = get_player_by_discord_id(ctx.author.id)
-    if len(identity) != 0:
-        username = await api_helper.get_username(identity[0])
-        await ctx.channel.send(
-            f"This Discord account has already registered osu! account: {username}."
-        )
-        return
-
-    rank, username, id = await api_helper.get_rank_username_id(username)
-    if id in get_all_registered():
-        await ctx.channel.send("You're already registered!")
-        return
-
-    player_data = PlayerData(
-        discord_id=ctx.author.id,
-        username=username,
-        scores={bmsid: ScoreData(pp=0, sr=0) for bmsid in state["beatmaps"]}
-    )
-    if rank < 50000:
-        state["pros"][id] = player_data
-    else:
-        state["amateurs"][id] = player_data
-
-    update_state()
-    await update_display()
-    await update_detailed_display()
-    await ctx.channel.send(f"Successfully registered {username}!")
+    registration.register()
 
 
 @bot.command()
@@ -413,8 +365,7 @@ else:
         state = pickle.load(f)
 
 
-# bot init
-
+# init
 @bot.event
 async def on_ready():
     print('Logged in as')
