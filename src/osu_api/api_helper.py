@@ -4,21 +4,21 @@ import aiohttp
 
 # file imports
 import api_config
+import api_request
 import token_handler
+from ..utils.sanitizer import sanitize
 
 URL = "https://osu.ppy.sh/api/v2/"
 
 
 async def regen_token():
-    async with aiohttp.ClientSession() as session:
-        async with session.post("https://osu.ppy.sh/oauth/token", data={
+    async with api_request.post("https://osu.ppy.sh/oauth/token", {
             "client_id": api_config.client_id,
             "client_secret": api_config.client_secret,
             "grant_type": "client_credentials",
             "scope": "public"
-        }) as response:
-            response_json = await response.json()
-            token_handler.set_token(response_json["access_token"])
+    }) as result:
+        token_handler.set_token(result["access_token"])
 
 
 async def _get_ranked_beatmapsets(mode_num, *sql_dates):
@@ -70,34 +70,17 @@ async def get_good_sets(mode: str, months: list[str]):
 
 async def get_rank_username_id(username):
     token = token_handler.get_token()
-    async with aiohttp.ClientSession() as session:
-        async with session.get(URL + f"users/{username}/osu",
-                params={
-                    "key": "username"
-                },
-                headers={
-                    "Authorization": f"Bearer {token}"
-                }) as response:
-            user = await response.json()
-            return int(user["statistics"]["global_rank"]), user["username"], user["id"]
+    url = URL + f"users/{username}/osu"
+    async with api_request.get(url, {"Authorization": f"Bearer {token}"}, {"key": "username"}) as user:
+        return int(user["statistics"]["global_rank"]), user["username"], user["id"]
 
 
 async def get_username(id):
     token = token_handler.get_token()
-    async with aiohttp.ClientSession() as session:
-        async with session.get(URL + f"users/{id}",
-                params={
-                    "key": "id"
-                },
-                headers={
-                    "Authorization": f"Bearer {token}"
-                }) as response:
-            user = await response.json()
-            username: str = user["username"]
-            if "_" in username:
-                underscore_index = username.index("_")
-                username = username[:underscore_index] + "\\" + username[underscore_index:]
-            return username
+    url = URL + f"users/{id}"
+    async with api_request.get(url, {"Authorization": f"Bearer {token}"}, {"key": "id"}) as user:
+        username = user["username"]
+        return sanitize(username)
 
 
 async def get_recent(id):
