@@ -8,6 +8,7 @@ import sys
 from typing import TypedDict
 
 import discord
+from discord import player
 from discord.errors import NotFound
 from discord.ext import commands, tasks
 
@@ -51,6 +52,7 @@ async def score_check():
     # check that tournament is running
     if len(state["beatmaps"]) == 0:
         await update_display()
+        await update_detailed_display()
         return
 
     # print("Start score check:", datetime.datetime.now())
@@ -59,6 +61,7 @@ async def score_check():
         await check_player(id)
     update_state()
     await update_display()
+    await update_detailed_display()
     # print("End score check:", datetime.datetime.now())
 
 @tasks.loop(minutes=1)
@@ -118,6 +121,7 @@ async def register(ctx: commands.Context, *, username: str):
 
     update_state()
     await update_display()
+    await update_detailed_display()
     await ctx.channel.send(f"Successfully registered {username}!")
 
 @bot.command()
@@ -136,6 +140,7 @@ async def unregister(ctx: commands.Context):
         state["amateurs"].pop(id)
     update_state()
     await update_display()
+    await update_detailed_display()
     await ctx.channel.send(f"Successfully unregistered {username}!")
 
 @bot.command(name="getrank")
@@ -178,6 +183,7 @@ async def start(ctx: commands.Context, *set_codes: str):
         player_data["scores"] = copy.deepcopy(blank_scores)
     update_state()
     await update_display()
+    await update_detailed_display()
 
 @bot.command(name="stop")
 async def stop(ctx: commands.Context):
@@ -192,6 +198,7 @@ async def stop(ctx: commands.Context):
         player_data["scores"] = {}
     update_state()
     await update_display()
+    await update_detailed_display()
 
 @bot.command(name="manualcheck")
 async def manual_check(ctx: commands.Context):
@@ -203,6 +210,7 @@ async def manual_check(ctx: commands.Context):
         await check_player(id)
     update_state()
     await update_display()
+    await update_detailed_display()
 
 @bot.command(name="printstate")
 async def print_state(ctx: commands.Context):
@@ -241,26 +249,79 @@ async def update_display():
         message += f"{bmsdata['mod']}: <https://osu.ppy.sh/beatmapsets/{bmsid}> ({bmsdata['title']})\n"
 
     message += "\n**PRO STANDINGS**\n"
-
-    pro_scores = {}
-    for pro_id, pro_data in state["pros"].items():
-        name = pro_data["username"]
-        total_score = sum(calculate_score(**score) for score in pro_data["scores"].values())
-        pro_scores[name] = total_score
-    for i, (pro_name, pro_score) in enumerate(sorted(pro_scores.items(), key=lambda x: x[1], reverse=True)):
-        message += f"{i+1}. {pro_name} ({pro_score:.1f})\n"
-
+    message += get_total_leaderboards(state["pros"])
     message += "\n**AMATEUR STANDINGS**\n"
-
-    amateur_scores = {}
-    for amateur_id, amateur_data in state["amateurs"].items():
-        name = amateur_data["username"]
-        total_score = sum(calculate_score(**score) for score in amateur_data["scores"].values())
-        amateur_scores[name] = total_score
-    for i, (amateur_name, amateur_score) in enumerate(sorted(amateur_scores.items(), key=lambda x: x[1], reverse=True)):
-        message += f"{i+1}. {amateur_name} ({amateur_score:.1f})\n"
+    message += get_total_leaderboards(state["amateurs"])
 
     await display_message.edit(content=message)
+
+def get_total_leaderboards(players):
+    message = ""
+    player_scores = get_player_scores(players)
+    for i, (username, score_data) in enumerate(player_scores.items()):
+        total_score = sum(normalized for _, normalized in score_data.values())
+        message += f"{i+1}. {username} ({total_score:.1f})\n"
+    return message
+
+async def update_detailed_display():
+    detail_channel = bot.get_channel(config.detail_channel)
+    if detail_channel.last_message_id == None:
+        await detail_channel.send("temp")
+    try:
+        detail_message = await detail_channel.fetch_message(detail_channel.last_message_id)
+    except NotFound:
+        await detail_channel.send("temp")
+        detail_message = await detail_channel.fetch_message(detail_channel.last_message_id)
+
+    if len(state["beatmaps"]) == 0:
+        await detail_message.edit(content="Tourney not currently running!")
+        return
+
+    message = "**PROS**\n\n"
+    message += get_map_leaderboards(state["pros"])
+    message += "**AMATEURS**\n\n"
+    message += get_map_leaderboards(state["amateurs"])
+
+    await detail_message.edit(content=message)
+
+def get_map_leaderboards(players):
+    message = ""
+    player_scores = get_player_scores(players)
+    for mapset_id, mapset_data in state["beatmaps"].items():
+        message += f"__{mapset_data['title']}__\n"
+
+        for i, (username, score_data) in enumerate(player_scores.items()):
+            score, normalized = score_data[mapset_id]
+            message += f"{i+1}. {username}: {score:.1f} (normalized: {normalized:.1f})\n"
+        message += "\n"
+    return message
+
+# this is probably needlessly long
+# returns map from username to (map id to (score, normalized))
+def get_player_scores(players):
+    to_return = {}
+    for player_data in players.values():
+        scores = {}
+        for map_id, score_data in player_data["scores"].items():
+            scores[map_id] = calculate_score(score_data["pp"], score_data["sr"])
+        to_return[player_data["username"]] = scores
+
+    # add in normalized
+    best_scores = {}
+    for mapset_id in state["beatmaps"]:
+        if len(to_return) == 0:
+            best_score = 0
+        else:
+            best_score = max(v[mapset_id] for (_, v) in to_return.items())
+
+        if best_score == 0:
+            best_score = 1 # to prevent divide by zero
+        best_scores[mapset_id] = best_score
+
+    for player_name, player_data in to_return.items():
+        for map_id, score in player_data.items():
+            to_return[player_name][map_id] = (score, 250 * (score / best_scores[map_id]))
+    return to_return
 
 def is_valid_play(s):
     bmsid = str(s["beatmap"]["beatmapset_id"])

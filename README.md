@@ -7,4 +7,5 @@ If you wanna run the bot for whatever reason, you'll need to create file `state.
 - client_secret: osu!api v2 client secret
 - announce_channel: channel id where score announcements are made
 - display_channel: channel where display is updated
+- detail_channel: channel where map-specific results are posted
 - nico_id: id of admin discord account
