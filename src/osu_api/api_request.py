@@ -1,17 +1,20 @@
 import aiohttp
 
 import api_config
+import api_urls
 import http_request
 import token_handler
 
 
 async def get_token():
-    async with http_request.post("https://osu.ppy.sh/oauth/token", {
+    data = {
         "client_id": api_config.client_id(),
         "client_secret": api_config.client_secret(),
         "grant_type": "client_credentials",
         "scope": "public"
-    }) as result:
+    }
+
+    async with http_request.post(api_urls.token(), data) as result:
         return result["access_token"]
 
 
@@ -36,7 +39,7 @@ async def get_ranked_beatmapsets(mode_num, sql_dates):
         for date in sql_dates:
             cur_page = 1
             while True:
-                async with session.get(URL + f"beatmapsets/search",
+                async with session.get("beatmapsets/search",
                                        params={
                                            "m": mode_num,
                                            "s": "ranked",
