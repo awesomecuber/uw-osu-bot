@@ -10,7 +10,7 @@ URL = "https://osu.ppy.sh/api/v2/"
 
 
 async def regen_token():
-    with api_request.get_token() as token:
+    async with api_request.get_token() as token:
         token_handler.set_token(token)
 
 
