@@ -5,7 +5,6 @@ import aiohttp
 # file imports
 import api_request
 import token_handler
-from ..utils.sanitizer import sanitize
 from ..utils import modes
 
 URL = "https://osu.ppy.sh/api/v2/"
@@ -68,8 +67,7 @@ async def get_rank_username_id(username):
 async def get_username(id):
     url = URL + f"users/{id}"
     async with api_request.get(url, {"key": "id"}) as user:
-        username = user["username"]
-        return sanitize(username)
+        return user["username"]
 
 
 async def get_recent(id):
