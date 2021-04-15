@@ -5,3 +5,6 @@ state
 state-backup
 __pycache__
 convert_beatmaps.py
+
+# Ignore .vscode and .idea
+.*
