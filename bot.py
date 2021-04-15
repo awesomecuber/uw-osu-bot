@@ -253,7 +253,7 @@ async def update_display():
     message += "\n**AMATEUR STANDINGS**\n"
     message += get_total_leaderboards(state["amateurs"])
 
-    await display_message.edit(embed=discord.Embed(description=message))
+    await display_message.edit(content=message)
 
 def get_total_leaderboards(players):
     message = ""
