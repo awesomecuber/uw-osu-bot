@@ -25,5 +25,5 @@ async def get_many(urls, headerss, paramss):
         for i in range(len(urls)):
             async with session.get(urls[i], headers=headerss[i], params=paramss[i]) as response:
                 response_json = await response.json()
-                result.push(response_json)
+                result.append(response_json)
         return result
