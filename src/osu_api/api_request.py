@@ -5,8 +5,8 @@ import token_handler
 
 async def get_token():
     async with http_request.post("https://osu.ppy.sh/oauth/token", {
-        "client_id": api_config.client_id,
-        "client_secret": api_config.client_secret,
+        "client_id": api_config.client_id(),
+        "client_secret": api_config.client_secret(),
         "grant_type": "client_credentials",
         "scope": "public"
     }) as result:
