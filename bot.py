@@ -264,25 +264,28 @@ def get_total_leaderboards(players):
     return message
 
 async def update_detailed_display():
-    detail_channel = bot.get_channel(config.detail_channel)
-    if detail_channel.last_message_id == None:
+    detail_channel: discord.TextChannel = bot.get_channel(config.detail_channel)
+    discord_messages = await detail_channel.history(limit=2).flatten()
+    if len(discord_messages) == 0:
+        await detail_channel.send("temp1")
+        await detail_channel.send("temp2")
+        discord_messages = await detail_channel.history(limit=2).flatten()
+    if len(discord_messages) == 1:
         await detail_channel.send("temp")
-    try:
-        detail_message = await detail_channel.fetch_message(detail_channel.last_message_id)
-    except NotFound:
-        await detail_channel.send("temp")
-        detail_message = await detail_channel.fetch_message(detail_channel.last_message_id)
+        discord_messages = await detail_channel.history(limit=2).flatten()
 
     if len(state["beatmaps"]) == 0:
-        await detail_message.edit(content="Tourney not currently running!")
+        await discord_messages[0].edit(content="Tourney not currently running!")
+        await discord_messages[1].edit(content=".")
         return
 
-    message = "**PROS**\n\n"
-    message += get_map_leaderboards(state["pros"])
-    message += "**AMATEURS**\n\n"
-    message += get_map_leaderboards(state["amateurs"])
+    message1 = "**PROS**\n\n"
+    message1 += get_map_leaderboards(state["pros"])
+    message2 = "------------------\n**AMATEURS**\n\n"
+    message2 += get_map_leaderboards(state["amateurs"])
 
-    await detail_message.edit(embed=discord.Embed(description=message))
+    await discord_messages[1].edit(content=message1)
+    await discord_messages[0].edit(content=message2)
 
 def get_map_leaderboards(players):
     message = ""
