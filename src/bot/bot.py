@@ -1,5 +1,4 @@
 import copy
-import datetime
 import os
 import logging
 import pickle
@@ -8,12 +7,11 @@ import sys
 from typing import TypedDict
 
 import discord
-from discord import player
 from discord.errors import NotFound
 from discord.ext import commands, tasks
 
-import apihelper
-import config
+from ..osu_api import api_helper
+import bot_config
 
 
 logging.basicConfig(level=logging.INFO)
@@ -42,7 +40,7 @@ if "debug" in sys.argv:
     bot = commands.Bot(command_prefix="a!")
 else:
     bot = commands.Bot(command_prefix="uw!")
-state = State(pros={}, amateurs={}, beatmaps=[])
+state = State(pros={}, amateurs={}, beatmaps={})
 
 
 # recurrent tasks
@@ -66,7 +64,7 @@ async def score_check():
 
 @tasks.loop(minutes=1)
 async def time_check():
-    channel = bot.get_channel(config.announce_channel) # channel ID goes here
+    channel = bot.get_channel(bot_config.announce_channel()) # channel ID goes here
     await channel.send(state)
     # check for monday 5pm
     # remove beatmaps from state
@@ -75,18 +73,18 @@ async def time_check():
 
 @tasks.loop(hours=12)
 async def reset_token():
-    await apihelper.regen_token()
+    await api_helper.regen_token()
     # add in resetting usernames too
 
 
 # commands
 
 @bot.command(name="getrandom")
-async def get_random(ctx: commands.Context, mode: str, *months: str):
-    if ctx.author.id != config.nico_id:
+async def get_random(ctx: commands.Context, mode: str, months: list[str]):
+    if ctx.author.id != bot_config.admin_id():
         return
 
-    good_bmss = await apihelper.get_good_sets(mode, months)
+    good_bmss = await api_helper.get_good_sets(mode, months)
     random.shuffle(good_bmss)
     good_bmss = good_bmss[:4]
     message = ""
@@ -98,13 +96,13 @@ async def get_random(ctx: commands.Context, mode: str, *months: str):
 async def register(ctx: commands.Context, *, username: str):
     identity = get_player_by_discord_id(ctx.author.id)
     if len(identity) != 0:
-        username = await apihelper.get_username(identity[0])
+        username = await api_helper.get_username(identity[0])
         await ctx.channel.send(
             f"This Discord account has already registered osu! account: {username}."
         )
         return
 
-    rank, username, id = await apihelper.get_rank_username_id(username)
+    rank, username, id = await api_helper.get_rank_username_id(username)
     if id in get_all_registered():
         await ctx.channel.send("You're already registered!")
         return
@@ -132,7 +130,7 @@ async def unregister(ctx: commands.Context):
         return
 
     id = identity[0]
-    username = await apihelper.get_username(id)
+    username = await api_helper.get_username(id)
 
     if id in state["pros"]:
         state["pros"].pop(id)
@@ -145,7 +143,7 @@ async def unregister(ctx: commands.Context):
 
 @bot.command(name="getrank")
 async def get_rank(ctx: commands.Context, *, username: str):
-    rank, username, _ = await apihelper.get_rank_username_id(username)
+    rank, username, _ = await api_helper.get_rank_username_id(username)
     await ctx.channel.send(f"{username} is rank {rank}.")
 
 @bot.command()
@@ -156,13 +154,13 @@ async def identify(ctx: commands.Context):
         return
 
     id = identity[0]
-    username = await apihelper.get_username(id)
+    username = await api_helper.get_username(id)
     await ctx.channel.send(f"Registered as {username}.")
 
 # a set_code is the mapset id concatenated with the mod, like "294227NM"
 @bot.command(name="start")
 async def start(ctx: commands.Context, *set_codes: str):
-    if ctx.author.id != config.nico_id:
+    if ctx.author.id != bot_config.admin_id():
         return
 
     # update rank
@@ -173,7 +171,7 @@ async def start(ctx: commands.Context, *set_codes: str):
     beatmap_state = {}
     blank_scores = {}
 
-    beatmap_names = await apihelper.get_beatmap_names(*[set_code[:-2] for set_code in set_codes])
+    beatmap_names = await api_helper.get_beatmap_names(*[set_code[:-2] for set_code in set_codes])
     for set_code, map_name in zip(set_codes, beatmap_names):
         beatmap_state[set_code[:-2]] = BeatmapData(title=map_name, mod=set_code[-2:])
         blank_scores[set_code[:-2]] = ScoreData(pp=0, sr=0)
@@ -187,7 +185,7 @@ async def start(ctx: commands.Context, *set_codes: str):
 
 @bot.command(name="stop")
 async def stop(ctx: commands.Context):
-    if ctx.author.id != config.nico_id:
+    if ctx.author.id != bot_config.admin_id():
         return
 
     if len(state["beatmaps"]) == 0: # tourney runing
@@ -202,7 +200,7 @@ async def stop(ctx: commands.Context):
 
 @bot.command(name="manualcheck")
 async def manual_check(ctx: commands.Context):
-    if ctx.author.id != config.nico_id:
+    if ctx.author.id != bot_config.admin_id():
         return
 
     for id in state["pros"] | state["amateurs"]:
@@ -214,7 +212,7 @@ async def manual_check(ctx: commands.Context):
 
 @bot.command(name="printstate")
 async def print_state(ctx: commands.Context):
-    if ctx.author.id != config.nico_id:
+    if ctx.author.id != bot_config.admin_id():
         return
     print(state)
 
@@ -222,7 +220,7 @@ async def print_state(ctx: commands.Context):
 # helper
 
 async def update_display():
-    display_channel = bot.get_channel(config.display_channel)
+    display_channel = bot.get_channel(bot_config.display_channel())
     if display_channel.last_message_id == None:
         await display_channel.send("temp")
     try:
@@ -269,7 +267,7 @@ def get_total_leaderboards(players):
     return message
 
 async def update_detailed_display():
-    detail_channel: discord.TextChannel = bot.get_channel(config.detail_channel)
+    detail_channel: discord.TextChannel = bot.get_channel(bot_config.detail_channel())
     discord_messages = await detail_channel.history(limit=2).flatten()
     if len(discord_messages) == 0:
         await detail_channel.send("temp1")
@@ -339,7 +337,7 @@ def is_valid_play(s):
     if bmsid not in state["beatmaps"]:
         return False
 
-    if s["pp"] == None:
+    if s["pp"] is None:
         return False
 
     map_mod = state["beatmaps"][bmsid]["mod"]
@@ -355,7 +353,7 @@ def calculate_score(pp, sr):
 
 async def check_player(player_id):
     player_data = get_player_data_by_player_id(player_id)
-    recent_scores = await apihelper.get_recent(player_id)
+    recent_scores = await api_helper.get_recent(player_id)
     recent_scores = [s for s in recent_scores if is_valid_play(s)]
     for recent_score in recent_scores:
         beatmapset_id = str(recent_score["beatmap"]["beatmapset_id"])
@@ -363,7 +361,7 @@ async def check_player(player_id):
         sr = recent_score["beatmap"]["difficulty_rating"]
         score = calculate_score(pp, sr)
         if calculate_score(**player_data["scores"][beatmapset_id]) < calculate_score(pp, sr):
-            channel = bot.get_channel(config.announce_channel)
+            channel = bot.get_channel(bot_config.announce_channel())
             await channel.send(
                 f"{recent_score['user']['username']} got {pp}pp " \
                 f"on \"{recent_score['beatmap']['version']}\" difficulty ({sr}*) " \
@@ -411,4 +409,4 @@ async def on_ready():
     # time_check.start()
     reset_token.start()
 
-bot.run(config.bot_token)
+bot.run(bot_config.bot_token())
