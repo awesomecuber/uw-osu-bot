@@ -253,7 +253,7 @@ async def update_display():
     message += "\n**AMATEUR STANDINGS**\n"
     message += get_total_leaderboards(state["amateurs"])
 
-    await display_message.edit(content=message)
+    await display_message.edit(embed=discord.Embed(description=message))
 
 def get_total_leaderboards(players):
     message = ""
@@ -282,7 +282,7 @@ async def update_detailed_display():
     message += "**AMATEURS**\n\n"
     message += get_map_leaderboards(state["amateurs"])
 
-    await detail_message.edit(content=message)
+    await detail_message.edit(embed=discord.Embed(description=message))
 
 def get_map_leaderboards(players):
     message = ""
