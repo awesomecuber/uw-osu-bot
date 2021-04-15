@@ -46,23 +46,23 @@ async def get_rank_username_id(username):
         return user_rank, user_username, user_id
 
 
-async def get_username(id):
-    url = api_urls.user_by_id(id)
+async def get_username(player_id):
+    url = api_urls.user_by_id(player_id)
     async with api_request.get(url, {"key": "id"}) as user:
         return user["username"]
 
 
-async def get_recent(id):
-    url = api_urls.recent_scores_by_id(id)
+async def get_recent(player_id):
+    url = api_urls.recent_scores_by_id(player_id)
     return await api_request.get(url, {})
 
 
-async def get_beatmap_names(ids):
-    urls = [api_urls.beatmapset(id) for id in ids]
-    async with api_request.get_many(urls, [{} for _ in urls]) as maps:
-        return [map["title"] for map in maps]
+async def get_beatmap_names(beatmapset_ids):
+    urls = [api_urls.beatmapset(beatmapset_id) for beatmapset_id in beatmapset_ids]
+    async with api_request.get_many(urls, [{} for _ in urls]) as beatmaps:
+        return [beatmap["title"] for beatmap in beatmaps]
 
 if __name__ == "__main__":
     asyncio.run(regen_token())
     # maps = asyncio.run(get_good_sets("standard", ["1/21", "2/21"]))
-    print(asyncio.run(get_beatmap_names(294227, 480669)))
+    print(asyncio.run(get_beatmap_names([294227, 480669])))
