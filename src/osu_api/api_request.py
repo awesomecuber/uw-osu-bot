@@ -1,3 +1,5 @@
+from typing import Dict, Any
+
 import aiohttp
 
 import api_config
@@ -7,7 +9,7 @@ import token_handler
 from beatmapset import Beatmapset
 
 
-async def get_token():
+async def get_token() -> str:
     data = {
         "client_id": api_config.client_id(),
         "client_secret": api_config.client_secret(),
@@ -19,22 +21,22 @@ async def get_token():
         return result["access_token"]
 
 
-def headers():
+def headers() -> Dict[str, str]:
     token = token_handler.get_token()
     return {"Authorization": f"Bearer {token}"}
 
 
-async def get(url, params):
+async def get(url: str, params: Dict[str, Any]) -> str:
     async with http_request.get(url, headers(), params) as result:
         return result
 
 
-async def get_many(urls, params):
+async def get_many(urls: list[str], params: list[Dict[str, Any]]) -> str:
     async with http_request.get_many(urls, [headers() for _ in urls], params) as result:
         return result
 
 
-async def get_ranked_beatmapsets(mode_num, sql_dates):
+async def get_ranked_beatmapsets(mode_num: int, sql_dates: list[str]) -> list[Beatmapset]:
     results = []
     async with aiohttp.ClientSession() as session:
         for date in sql_dates:

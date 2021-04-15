@@ -1,21 +1,23 @@
+from typing import Any, Dict
+
 import aiohttp
 
 
-async def post(url, data):
+async def post(url: str, data):
     async with aiohttp.ClientSession() as session:
         async with session.post(url, data=data) as response:
             response_json = await response.json()
             return response_json
 
 
-async def get(url, headers, params):
+async def get(url: str, headers: Dict[str, Any], params: Dict[str, Any]):
     async with aiohttp.ClientSession() as session:
         async with session.get(url, headers=headers, params=params) as response:
             response_json = await response.json()
             return response_json
 
 
-async def get_many(urls, headerss, paramss):
+async def get_many(urls: list[str], headerss: list[Dict[str, Any]], paramss: list[Dict[str, Any]]) -> list[Any]:
     async with aiohttp.ClientSession() as session:
         result = []
 

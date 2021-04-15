@@ -1,15 +1,14 @@
 from ..osu_api import api_helper
-from ..osu_api.score import Score
 from person import Person
 import tournament_state
 
 
-def is_registered(player_id):
+def is_registered(player_id) -> bool:
     state = tournament_state.get_state()
-    return state.pros.has_key(player_id) or state.amateurs.has_key(player_id)
+    return player_id in state.pros or player_id in state.amateurs
 
 
-def register(discord_id, player_name):
+def register(discord_id, player_name) -> bool:
     state = tournament_state.get_state()
 
     identity = get_player_by_discord_id(discord_id)
@@ -18,25 +17,18 @@ def register(discord_id, player_name):
         await ctx.channel.send(
             f"This Discord account has already registered osu! account: {username}."
         )
-        return
+        return False
 
     player = await api_helper.get_player(player_name)
     if is_registered(player.id):
         await ctx.channel.send("You're already registered!")
-        return
+        return False
 
-    player_data = Person(
-        discord_id=discord_id,
-        player_name=player_name,
-        scores={beatmapset_id: Score(0, 0) for beatmapset_id in state.beatmaps}
-    )
-
-    if player.rank < 50000:
-        state.pros[id] = player_data
-    else:
-        state.amateurs[id] = player_data
+    person = Person(discord_id, player)
+    state.register(person)
 
     update_state()
     await update_display()
     await update_detailed_display()
     await ctx.channel.send(f"Successfully registered {player_name}!")
+    return True
