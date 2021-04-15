@@ -16,25 +16,29 @@ import bot_config
 
 logging.basicConfig(level=logging.INFO)
 
-# types
 
+# types
 class ScoreData(TypedDict):
     pp: int
     sr: int
 
+
 class PlayerData(TypedDict):
     discord_id: int
     username: str
-    scores: dict[str, ScoreData] # beatmapset_id to score
+    scores: dict[str, ScoreData]  # beatmapset_id to score
+
 
 class BeatmapData(TypedDict):
     title: str
     mod: str
 
+
 class State(TypedDict):
-    pros: dict[str, PlayerData] # user_id to data
-    amateurs: dict[str, PlayerData] # user_id to data
-    beatmaps: dict[str, BeatmapData] # beatmapset_ids to data
+    pros: dict[str, PlayerData]  # user_id to data
+    amateurs: dict[str, PlayerData]  # user_id to data
+    beatmaps: dict[str, BeatmapData]  # beatmapset_ids to data
+
 
 if "debug" in sys.argv:
     bot = commands.Bot(command_prefix="a!")
@@ -44,7 +48,6 @@ state = State(pros={}, amateurs={}, beatmaps={})
 
 
 # recurrent tasks
-
 @tasks.loop(minutes=1)
 async def score_check():
     # check that tournament is running
@@ -55,12 +58,11 @@ async def score_check():
 
     # print("Start score check:", datetime.datetime.now())
     for id in state["pros"] | state["amateurs"]:
-        # print(id, "score check:", datetime.datetime.now())
         await check_player(id)
     update_state()
     await update_display()
     await update_detailed_display()
-    # print("End score check:", datetime.datetime.now())
+
 
 @tasks.loop(minutes=1)
 async def time_check():
@@ -69,7 +71,7 @@ async def time_check():
     # check for monday 5pm
     # remove beatmaps from state
     # announce results
-    pass
+
 
 @tasks.loop(hours=12)
 async def reset_token():
@@ -78,7 +80,6 @@ async def reset_token():
 
 
 # commands
-
 @bot.command(name="getrandom")
 async def get_random(ctx: commands.Context, mode: str, months: list[str]):
     if ctx.author.id != bot_config.admin_id():
@@ -91,6 +92,7 @@ async def get_random(ctx: commands.Context, mode: str, months: list[str]):
     for bms in good_bmss:
         message += f"<https://osu.ppy.sh/beatmapsets/{bms}>\n"
     await ctx.channel.send(message)
+
 
 @bot.command()
 async def register(ctx: commands.Context, *, username: str):
@@ -122,6 +124,7 @@ async def register(ctx: commands.Context, *, username: str):
     await update_detailed_display()
     await ctx.channel.send(f"Successfully registered {username}!")
 
+
 @bot.command()
 async def unregister(ctx: commands.Context):
     identity = get_player_by_discord_id(ctx.author.id)
@@ -141,10 +144,12 @@ async def unregister(ctx: commands.Context):
     await update_detailed_display()
     await ctx.channel.send(f"Successfully unregistered {username}!")
 
+
 @bot.command(name="getrank")
 async def get_rank(ctx: commands.Context, *, username: str):
     rank, username, _ = await api_helper.get_rank_username_id(username)
     await ctx.channel.send(f"{username} is rank {rank}.")
+
 
 @bot.command()
 async def identify(ctx: commands.Context):
@@ -156,6 +161,7 @@ async def identify(ctx: commands.Context):
     id = identity[0]
     username = await api_helper.get_username(id)
     await ctx.channel.send(f"Registered as {username}.")
+
 
 # a set_code is the mapset id concatenated with the mod, like "294227NM"
 @bot.command(name="start")
@@ -183,6 +189,7 @@ async def start(ctx: commands.Context, *set_codes: str):
     await update_display()
     await update_detailed_display()
 
+
 @bot.command(name="stop")
 async def stop(ctx: commands.Context):
     if ctx.author.id != bot_config.admin_id():
@@ -198,6 +205,7 @@ async def stop(ctx: commands.Context):
     await update_display()
     await update_detailed_display()
 
+
 @bot.command(name="manualcheck")
 async def manual_check(ctx: commands.Context):
     if ctx.author.id != bot_config.admin_id():
@@ -210,6 +218,7 @@ async def manual_check(ctx: commands.Context):
     await update_display()
     await update_detailed_display()
 
+
 @bot.command(name="printstate")
 async def print_state(ctx: commands.Context):
     if ctx.author.id != bot_config.admin_id():
@@ -218,11 +227,8 @@ async def print_state(ctx: commands.Context):
 
 
 # helper
-
 async def update_display():
     display_channel = bot.get_channel(bot_config.display_channel())
-    if display_channel.last_message_id == None:
-        await display_channel.send("temp")
     try:
         display_message = await display_channel.fetch_message(display_channel.last_message_id)
     except NotFound:
@@ -253,6 +259,7 @@ async def update_display():
 
     await display_message.edit(content=message)
 
+
 def get_total_leaderboards(players):
     message = ""
     player_scores = get_player_scores(players)
@@ -265,6 +272,7 @@ def get_total_leaderboards(players):
     for i, (username, total_score) in enumerate(sorted(final_scores.items(), key=lambda x: x[1], reverse=True)):
         message += f"{i+1}. {username} ({total_score:.1f})\n"
     return message
+
 
 async def update_detailed_display():
     detail_channel: discord.TextChannel = bot.get_channel(bot_config.detail_channel())
@@ -282,13 +290,14 @@ async def update_detailed_display():
         await discord_messages[1].edit(content=".")
         return
 
-    message1 = "**PROS**\n\n"
-    message1 += get_map_leaderboards(state["pros"])
-    message2 = "------------------\n**AMATEURS**\n\n"
-    message2 += get_map_leaderboards(state["amateurs"])
+    message_pros = "**PROS**\n\n"
+    message_pros += get_map_leaderboards(state["pros"])
+    message_ams = "------------------\n**AMATEURS**\n\n"
+    message_ams += get_map_leaderboards(state["amateurs"])
 
-    await discord_messages[1].edit(content=message1)
-    await discord_messages[0].edit(content=message2)
+    await discord_messages[1].edit(content=message_pros)
+    await discord_messages[0].edit(content=message_ams)
+
 
 def get_map_leaderboards(players):
     message = ""
@@ -303,6 +312,7 @@ def get_map_leaderboards(players):
             message += f"{i+1}. {username}: {score:.1f} (normalized: {normalized:.1f})\n"
         message += "\n"
     return message
+
 
 # this is probably needlessly long
 # returns map from username to (map id to (score, normalized))
@@ -331,6 +341,7 @@ def get_player_scores(players):
             to_return[player_name][map_id] = (score, 250 * (score / best_scores[map_id]))
     return to_return
 
+
 def is_valid_play(s):
     bmsid = str(s["beatmap"]["beatmapset_id"])
 
@@ -348,8 +359,10 @@ def is_valid_play(s):
 
     return True # shouldn't reach here
 
+
 def calculate_score(pp, sr):
     return pp * sr**2
+
 
 async def check_player(player_id):
     player_data = get_player_data_by_player_id(player_id)
@@ -362,33 +375,36 @@ async def check_player(player_id):
         score = calculate_score(pp, sr)
         if calculate_score(**player_data["scores"][beatmapset_id]) < calculate_score(pp, sr):
             channel = bot.get_channel(bot_config.announce_channel())
+            username = recent_score['user']['username']
+            difficulty_name = recent_score['beatmap']['version']
+            song_name = recent_score['beatmapset']['title_unicode']
             await channel.send(
-                f"{recent_score['user']['username']} got {pp}pp " \
-                f"on \"{recent_score['beatmap']['version']}\" difficulty ({sr}*) " \
-                f"of \"{recent_score['beatmapset']['title_unicode']}\"! " \
-                f"This results in a score of {score:.1f}."
+                f"{username} got {pp}pp on \"{difficulty_name}\" difficulty ({sr}*) of \"{song_name}\"!"
+                f" This results in a score of {score:.1f}."
             )
             player_data["scores"][beatmapset_id]["pp"] = pp
             player_data["scores"][beatmapset_id]["sr"] = sr
 
 
 # state helpers
-
 def get_all_registered():
     return list(state["pros"].keys()) + list(state["amateurs"].keys())
+
 
 def get_player_by_discord_id(discord_id):
     return [k for (k, v) in (state["pros"] | state["amateurs"]).items() if v["discord_id"] == discord_id]
 
+
 def get_player_data_by_player_id(player_id):
     return [v for (k, v) in (state["pros"] | state["amateurs"]).items() if k == player_id][0]
 
-# saving/loading state
 
+# saving/loading state
 def update_state():
     write_file = open("state", "wb")
     pickle.dump(state, write_file)
     write_file.close()
+
 
 if not os.path.isfile("state"):
     update_state()
