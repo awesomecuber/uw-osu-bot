@@ -5,7 +5,6 @@ import asyncio
 import api_request
 import api_urls
 import token_handler
-from ..utils import modes
 
 
 async def regen_token():
@@ -13,31 +12,7 @@ async def regen_token():
         token_handler.set_token(token)
 
 
-def _generate_sql_dates(months: list[str]):
-    sql_dates = []
-    for month in months:
-        date_month, date_year = month.split("/")
-        if len(date_month) == 1:
-            date_month = "0" + date_month
-        sql_dates.append(f"20{date_year}-{date_month}")
-    return sql_dates
-
-
-async def get_good_sets(mode: str, months: list[str]):
-    sql_dates = _generate_sql_dates(months)
-    mode_id = modes.get_id(mode)
-    beatmapsets = await api_request.get_ranked_beatmapsets(mode_id, sql_dates)
-
-    good_sets = []
-    for beatmapset in beatmapsets:
-        beatmaps = beatmapset["beatmaps"]
-        max_star_rating = max([beatmap["difficulty_rating"] for beatmap in beatmaps])
-        if len(beatmaps) >= 5 and max_star_rating >= 6:
-            good_sets.append(beatmapset["id"])
-    return good_sets
-
-
-async def get_rank_username_id(username):
+async def get_player(username):
     url = api_urls.user_by_username(username)
     async with api_request.get(url, {"key": "username"}) as user:
         user_rank = int(user["statistics"]["global_rank"])
@@ -61,6 +36,7 @@ async def get_beatmap_names(beatmapset_ids):
     urls = [api_urls.beatmapset(beatmapset_id) for beatmapset_id in beatmapset_ids]
     async with api_request.get_many(urls, [{} for _ in urls]) as beatmaps:
         return [beatmap["title"] for beatmap in beatmaps]
+
 
 if __name__ == "__main__":
     asyncio.run(regen_token())
