@@ -3,6 +3,7 @@ import asyncio
 import api_request
 import api_urls
 import token_handler
+from beatmapset import Beatmapset
 from player import Player
 
 
@@ -28,13 +29,13 @@ async def get_recent(player_id):
     return await api_request.get(url, {})
 
 
-async def get_beatmap_names(beatmapset_ids: list) -> list[str]:
+async def get_beatmapsets(beatmapset_ids: list) -> list[Beatmapset]:
     urls = [api_urls.beatmapset(beatmapset_id) for beatmapset_id in beatmapset_ids]
-    async with api_request.get_many(urls, [{} for _ in urls]) as beatmaps:
-        return [beatmap["title"] for beatmap in beatmaps]
+    async with api_request.get_many(urls, [{} for _ in urls]) as beatmapset_jsons:
+        return [Beatmapset(beatmapset_json) for beatmapset_json in beatmapset_jsons]
 
 
 if __name__ == "__main__":
     asyncio.run(regen_token())
     # maps = asyncio.run(get_good_sets("standard", ["1/21", "2/21"]))
-    print(asyncio.run(get_beatmap_names([294227, 480669])))
+    print(asyncio.run(get_beatmapsets([294227, 480669])))
