@@ -1,6 +1,6 @@
 from dotenv import dotenv_values
 
-configs = dotenv_values("../../.env")
+configs = dotenv_values()
 
 _client_id = int(configs["CLIENT_ID"])
 _client_secret = str(configs["CLIENT_SECRET"])

@@ -1,7 +1,7 @@
 from typing import Dict, Optional
 
-from person import Person
-from tournament_map import TournamentMap
+from .person import Person
+from .tournament_map import TournamentMap
 
 
 class TournamentState:

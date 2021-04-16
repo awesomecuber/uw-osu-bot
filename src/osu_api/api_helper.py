@@ -1,11 +1,9 @@
 import asyncio
 from typing import List
 
-import api_request
-import api_urls
-import token_handler
-from beatmapset import Beatmapset
-from player import Player
+from . import api_request, api_urls, token_handler
+from .beatmapset import Beatmapset
+from .player import Player
 
 
 async def regen_token() -> None:

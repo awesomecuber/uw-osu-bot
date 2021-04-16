@@ -1,8 +1,8 @@
 import re
 from typing import List
 
-from tournament_map import TournamentMap
-from tournament_state import TournamentState
+from .tournament_map import TournamentMap
+from .tournament_state import TournamentState
 from ..osu_api import api_helper
 
 

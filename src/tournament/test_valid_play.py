@@ -1,4 +1,4 @@
-from tournament_state import TournamentState
+from .tournament_state import TournamentState
 
 
 def is_valid_play(play_json) -> bool:

@@ -2,11 +2,8 @@ from typing import Any, Dict, List
 
 import aiohttp
 
-import api_config
-import api_urls
-import http_request
-import token_handler
-from beatmapset import Beatmapset
+from . import api_config, api_urls, http_request, token_handler
+from .beatmapset import Beatmapset
 
 
 async def get_token() -> str:

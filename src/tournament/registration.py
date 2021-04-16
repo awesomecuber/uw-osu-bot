@@ -1,9 +1,9 @@
 from typing import Optional
 
+from .person import Person
+from .tournament_state import TournamentState
 from ..osu_api import api_helper
 from ..osu_api.player import Player
-from person import Person
-from tournament_state import TournamentState
 
 
 def is_registered(player_id: int) -> bool:

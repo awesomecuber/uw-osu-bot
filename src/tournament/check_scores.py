@@ -1,4 +1,4 @@
-from test_valid_play import is_valid_play
+from .test_valid_play import is_valid_play
 from ..discord import bot
 from ..osu_api import api_helper
 from ..osu_api.score import Score

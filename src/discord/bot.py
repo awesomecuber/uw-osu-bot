@@ -5,14 +5,14 @@ import sys
 
 from discord.ext import commands
 
-import bot_config
+from . import bot_config
 from ..tournament import tournament_save_handler
 from ..utils import update_manager
 
-from cogs.admin_commands import AdminCommands
-from cogs.debug_commands import DebugCommands
-from cogs.recurrent_tasks import RecurrentTasks, get_recurrent_task_instance
-from cogs.user_commands import UserCommands
+from .cogs.admin_commands import AdminCommands
+from .cogs.debug_commands import DebugCommands
+from .cogs.recurrent_tasks import RecurrentTasks, get_recurrent_task_instance
+from .cogs.user_commands import UserCommands
 
 logging.basicConfig(level=logging.INFO)
 

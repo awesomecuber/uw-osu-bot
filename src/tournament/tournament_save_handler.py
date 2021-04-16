@@ -1,6 +1,6 @@
 import pickle
 
-from tournament_state import TournamentState
+from .tournament_state import TournamentState
 
 
 def save_tournament_state() -> None:

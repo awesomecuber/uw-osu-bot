@@ -1,1 +1,1 @@
-python src/discord/bot.py
+python -m src.discord.bot

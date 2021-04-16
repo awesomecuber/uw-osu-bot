@@ -3,9 +3,7 @@ from typing import Tuple, List
 from discord import TextChannel, Message
 from discord.ext.commands import Bot
 
-import bot_config
-import leaderboards
-
+from . import bot_config, leaderboards
 from ..tournament.tournament_state import TournamentState
 
 

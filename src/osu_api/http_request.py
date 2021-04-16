@@ -1,6 +1,5 @@
-from typing import Any, Dict, List
-
 import aiohttp
+from typing import Any, Dict, List
 
 
 async def post(url: str, data):

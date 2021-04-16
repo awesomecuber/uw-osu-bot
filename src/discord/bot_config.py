@@ -1,6 +1,6 @@
 from dotenv import dotenv_values
 
-configs = dotenv_values("../../.env")
+configs = dotenv_values()
 
 _bot_token = str(configs["BOT_TOKEN"])
 
