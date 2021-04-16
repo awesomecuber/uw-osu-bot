@@ -1,3 +1,4 @@
+import asyncio
 import os
 import logging
 import sys
@@ -26,7 +27,7 @@ bot.add_cog(RecurrentTasks(bot))
 bot.add_cog(UserCommands(bot))
 
 if not os.path.isfile("../../state"):
-    await update_manager.update(bot)
+    asyncio.run(update_manager.update(bot))
 else:
     tournament_save_handler.load_tournament()
 
