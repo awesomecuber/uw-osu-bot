@@ -1,8 +1,8 @@
-import tournament_state
+from tournament_state import TournamentState
 
 
 def start_tournament() -> None:
-    state = tournament_state.get_state()
+    state = TournamentState.instance
 
     # update ranks
     state.update_ranks()

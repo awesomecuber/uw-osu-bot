@@ -1,6 +1,6 @@
 from ..osu_api.player import Player
 from ..osu_api.score import Score
-from ..tournament import tournament_state
+from ..tournament.tournament_state import TournamentState
 
 
 class Person:
@@ -11,5 +11,5 @@ class Person:
         self.reset_scores()
 
     def reset_scores(self) -> None:
-        tournament_beatmaps = tournament_state.get_state().beatmaps
+        tournament_beatmaps = TournamentState.instance.beatmaps
         self.scores = {beatmapset.beatmapset_id: Score(0, 0) for beatmapset in tournament_beatmaps}

@@ -8,7 +8,8 @@ from discord.ext import commands, tasks
 
 from ..osu_api import api_helper
 import bot_config
-from ..tournament import manage_tournament, registration, tournament_save_handler, tournament_state
+from ..tournament import manage_tournament, registration, tournament_save_handler
+from ..tournament.tournament_state import TournamentState
 from ..utils import update_manager
 
 
@@ -25,7 +26,7 @@ else:
 @tasks.loop(minutes=1)
 async def score_check():
     # check that tournament is running
-    if not tournament_state.is_running():
+    if not TournamentState.instance.is_running():
         await update_manager.update(bot)
         return
 
@@ -37,8 +38,8 @@ async def score_check():
 
 @tasks.loop(minutes=1)
 async def time_check():
-    channel = bot.get_channel(bot_config.announce_channel()) # channel ID goes here
-    await channel.send(state)
+    channel = bot.get_channel(bot_config.announce_channel())
+    # await channel.send(state)
     # check for monday 5pm
     # remove beatmaps from state
     # announce results
@@ -101,7 +102,7 @@ async def start(ctx: commands.Context, *set_codes: str):
     if ctx.author.id != bot_config.admin_id():
         return
 
-    if not tournament_state.is_running():
+    if not TournamentState.instance.is_running():
         return
 
     manage_tournament.start_tournament()
@@ -114,7 +115,7 @@ async def stop(ctx: commands.Context):
     if ctx.author.id != bot_config.admin_id():
         return
 
-    if not tournament_state.is_running():
+    if not TournamentState.instance.is_running():
         return
 
     manage_tournament.stop_tournament()
@@ -137,7 +138,7 @@ async def manual_check(ctx: commands.Context):
 async def print_state(ctx: commands.Context):
     if ctx.author.id != bot_config.admin_id():
         return
-    print(tournament_state.get_state())
+    print(TournamentState.instance)
 
 
 # this is probably needlessly long

@@ -1,8 +1,8 @@
-import tournament_state
+from tournament_state import TournamentState
 
 
 def is_valid_play(play_json) -> bool:
-    state = tournament_state.get_state()
+    state = TournamentState.instance
 
     # Is in the pool?
     beatmapset_id = str(play_json["beatmap"]["beatmapset_id"])

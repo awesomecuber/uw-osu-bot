@@ -3,16 +3,16 @@ from typing import Optional
 from ..osu_api import api_helper
 from ..osu_api.player import Player
 from person import Person
-import tournament_state
+from tournament_state import TournamentState
 
 
 def is_registered(player_id) -> bool:
-    state = tournament_state.get_state()
+    state = TournamentState.instance
     return player_id in state.pros or player_id in state.amateurs
 
 
 def register(discord_id, player_name) -> str:
-    state = tournament_state.get_state()
+    state = TournamentState.instance
 
     # Test if discord account is already registered
     registered_discord_id = get_discord_id_by_player_name(player_name)
@@ -33,7 +33,7 @@ def register(discord_id, player_name) -> str:
 
 
 def unregister(discord_id) -> str:
-    state = tournament_state.get_state()
+    state = TournamentState.instance
 
     # Check if player is registered
     registered_player = get_player_by_discord_id(discord_id)
@@ -51,7 +51,7 @@ def unregister(discord_id) -> str:
 
 
 def get_player_by_discord_id(discord_id) -> Optional[Player]:
-    state = tournament_state.get_state()
+    state = TournamentState.instance
     for person in state.pros.values():
         if person.discord_id == discord_id:
             return person.player
@@ -62,7 +62,7 @@ def get_player_by_discord_id(discord_id) -> Optional[Player]:
 
 
 def get_discord_id_by_player_name(player_name):
-    state = tournament_state.get_state()
+    state = TournamentState.instance
     for person in state.pros.values():
         if person.player.username == player_name:
             return person.discord_id
