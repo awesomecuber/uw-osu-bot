@@ -14,8 +14,8 @@ async def get_token() -> str:
         "scope": "public"
     }
 
-    async with http_request.post(api_urls.token(), data) as result:
-        return result["access_token"]
+    result = await http_request.post(api_urls.token(), data)
+    return result["access_token"]
 
 
 def headers() -> Dict[str, str]:
@@ -24,13 +24,13 @@ def headers() -> Dict[str, str]:
 
 
 async def get(url: str, params: Dict[str, Any]) -> str:
-    async with http_request.get(url, headers(), params) as result:
-        return result
+    result = await http_request.get(url, headers(), params)
+    return result
 
 
-async def get_many(urls: List[str], params: List[Dict[str, Any]]) -> str:
-    async with http_request.get_many(urls, [headers() for _ in urls], params) as result:
-        return result
+async def get_many(urls: List[str], params: List[Dict[str, Any]]) -> List:
+    result = await http_request.get_many(urls, [headers() for _ in urls], params)
+    return result
 
 
 async def get_ranked_beatmapsets(mode_num: int, sql_dates: List[str]) -> List[Beatmapset]:
@@ -45,11 +45,11 @@ async def get_ranked_beatmapsets(mode_num: int, sql_dates: List[str]) -> List[Be
                     "q": f"created={date}",
                     "page": cur_page
                 }
-                async with session.get("beatmapsets/search", params=params, headers=headers()) as response:
-                    res = await response.json()
-                    for beatmapset_json in res["beatmapsets"]:
-                        results.append(Beatmapset(beatmapset_json))
-                    cur_page += 1
-                    if len(res["beatmapsets"]) < 50:  # last page
-                        break
+                response = await session.get("beatmapsets/search", params=params, headers=headers())
+                beatmapsets_jsons = response.json()["beatmapsets"]
+                for beatmapset_json in beatmapsets_jsons:
+                    results.append(Beatmapset(beatmapset_json))
+                cur_page += 1
+                if len(beatmapsets_jsons) < 50:  # last page
+                    break
     return results

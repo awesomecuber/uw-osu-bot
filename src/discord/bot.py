@@ -1,4 +1,3 @@
-import asyncio
 import os
 import logging
 import sys
@@ -26,12 +25,6 @@ bot.add_cog(DebugCommands(bot))
 bot.add_cog(RecurrentTasks(bot))
 bot.add_cog(UserCommands(bot))
 
-# Initialization
-if not os.path.isfile("../../state"):
-    asyncio.run(update_manager.update(bot))
-else:
-    tournament_save_handler.load_tournament()
-
 
 async def announce(msg: str) -> None:
     channel = bot.get_channel(bot_config.announce_channel())
@@ -45,9 +38,15 @@ async def on_ready():
     print(bot.user.name)
     print(bot.user.id)
     print('------')
+
     get_recurrent_task_instance().score_check.start()
-    # time_check.start()
     get_recurrent_task_instance().reset_token.start()
+
+    # Initialization
+    if not os.path.isfile("../../state"):
+        await update_manager.update(bot)
+    else:
+        tournament_save_handler.load_tournament()
 
 
 bot.run(bot_config.bot_token())
