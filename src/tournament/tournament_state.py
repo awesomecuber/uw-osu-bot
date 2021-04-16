@@ -1,7 +1,8 @@
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 from .person import Person
 from .tournament_map import TournamentMap
+from ..utils.update_player import update_player
 
 
 class TournamentState:
@@ -33,13 +34,13 @@ class TournamentState:
         return None
 
     def update_ranks(self) -> None:
-        people = []
+        people = []  # type: List[Person]
         people.extend(self.pros.values())
         people.extend(self.amateurs.values())
         self.pros = {}
         self.amateurs = {}
         for person in people:
-            person.player.update()
+            update_player(person.player)
             self.register(person)
 
     def is_running(self) -> bool:
