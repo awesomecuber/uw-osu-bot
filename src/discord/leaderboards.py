@@ -1,4 +1,4 @@
-from typing import Dict, Any, List
+from typing import Any, Dict, List, Tuple
 
 from ..osu_api.score import Score
 from ..tournament.person import Person
@@ -80,6 +80,6 @@ def get_people_normalized_points(people: List[Person], beatmapset_ids: List[int]
 
 
 # Sorts a dict from highest float value to lowest
-def sort_dict(in_dict: Dict[Any, float]) -> List[Any, float]:
+def sort_dict(in_dict: Dict[Any, float]) -> List[Tuple[Any, float]]:
     in_list = list(in_dict)
     return sorted(in_list, key=lambda entry: entry[1], reverse=True)

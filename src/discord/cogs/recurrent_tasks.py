@@ -2,7 +2,6 @@ from discord.ext import tasks
 from discord.ext.commands import Bot, Cog
 
 from .. import bot_config
-from ...tournament.check_scores import check_player_scores
 from ...tournament.tournament_state import TournamentState
 from ...osu_api import api_helper
 from ...utils import update_manager
@@ -24,7 +23,7 @@ class RecurrentTasks(Cog):
             await update_manager.update(self.bot)
             return
 
-        state = TournamentState.instance
+        from ...tournament.check_scores import check_player_scores
 
         for player_id in state.pros:
             await check_player_scores(player_id)

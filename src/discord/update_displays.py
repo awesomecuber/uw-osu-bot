@@ -9,7 +9,7 @@ from ..tournament.tournament_state import TournamentState
 
 async def update_display(bot: Bot) -> None:
     display_channel = bot.get_channel(bot_config.display_channel())
-    discord_messages = get_discord_messages(display_channel, 1)
+    discord_messages = await get_discord_messages(display_channel, 1)
 
     if not TournamentState.instance.is_running():
         await discord_messages[0].edit(content="Tourney not currently running!")
@@ -43,7 +43,7 @@ def make_display_message() -> str:
 
 async def update_detailed_display(bot: Bot) -> None:
     detail_channel: TextChannel = bot.get_channel(bot_config.detail_channel())
-    discord_messages = get_discord_messages(detail_channel, 2)
+    discord_messages = await get_discord_messages(detail_channel, 2)
 
     if not TournamentState.instance.is_running():
         await discord_messages[0].edit(content="Tourney not currently running!")
@@ -64,7 +64,7 @@ def make_detailed_display_messages() -> Tuple[str, str]:
     return message_pros, message_ams
 
 
-def get_discord_messages(channel: TextChannel, number: int) -> List[Message]:
+async def get_discord_messages(channel: TextChannel, number: int) -> List[Message]:
     messages = await channel.history(limit=number).flatten()
 
     if len(messages) < number:

@@ -26,6 +26,7 @@ bot.add_cog(DebugCommands(bot))
 bot.add_cog(RecurrentTasks(bot))
 bot.add_cog(UserCommands(bot))
 
+# Initialization
 if not os.path.isfile("../../state"):
     asyncio.run(update_manager.update(bot))
 else:

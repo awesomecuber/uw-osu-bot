@@ -6,7 +6,7 @@ from .tournament_state import TournamentState
 from ..osu_api import api_helper
 
 
-def start_tournament(mapcodes: List[str]) -> None:
+async def start_tournament(mapcodes: List[str]) -> None:
     state = TournamentState.instance
 
     # update ranks

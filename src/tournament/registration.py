@@ -11,7 +11,7 @@ def is_registered(player_id: int) -> bool:
     return player_id in state.pros or player_id in state.amateurs
 
 
-def register(discord_id: int, player_name: str) -> str:
+async def register(discord_id: int, player_name: str) -> str:
     state = TournamentState.instance
 
     # Test if discord account is already registered

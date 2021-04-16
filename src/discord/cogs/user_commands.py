@@ -11,7 +11,7 @@ class UserCommands(Cog):
 
     @command()
     async def register(self, ctx: Context, *, player_name: str):
-        msg = registration.register(ctx.author.id, player_name)
+        msg = await registration.register(ctx.author.id, player_name)
         await update_manager.update(self.bot)
         await ctx.channel.send(msg)
 

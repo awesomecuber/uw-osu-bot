@@ -3,7 +3,6 @@ from typing import List
 
 from discord.ext.commands import Bot, Cog, command, Context
 
-from recurrent_tasks import get_recurrent_task_instance
 from .. import bot_config
 from ...tournament import good_beatmapsets, manage_tournament
 from ...tournament.tournament_state import TournamentState
@@ -58,4 +57,5 @@ class AdminCommands(Cog):
         if ctx.author.id != bot_config.admin_id():
             return
 
+        from .recurrent_tasks import get_recurrent_task_instance
         get_recurrent_task_instance().score_check.start()

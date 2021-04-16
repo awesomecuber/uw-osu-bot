@@ -45,3 +45,6 @@ class TournamentState:
 
     def is_running(self) -> bool:
         return len(self.tournamentmaps) > 0
+
+
+TournamentState()
