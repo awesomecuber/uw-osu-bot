@@ -42,10 +42,7 @@ def unregister(discord_id) -> str:
 
     # Remove player
     player_id = registered_player.player_id
-    if player_id in state.pros:
-        state.pros.pop(player_id)
-    elif player_id in state.amateurs:
-        state.amateurs.pop(player_id)
+    state.unregister(player_id)
 
     return f"Successfully unregistered {registered_player.username}!"
 

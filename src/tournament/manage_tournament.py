@@ -25,6 +25,10 @@ def start_tournament() -> None:
 
 
 def stop_tournament() -> None:
-    state["beatmaps"] = {}
-    for player_data in (state["pros"] | state["amateurs"]).values():
-        player_data["scores"] = {}
+    state = TournamentState.instance
+
+    state.beatmaps = {}
+    for person in state.pros.values():
+        person.reset_scores()
+    for person in state.amateurs.values():
+        person.reset_scores()
