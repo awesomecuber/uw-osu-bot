@@ -1,8 +1,9 @@
 from test_valid_play import is_valid_play
 from ..discord import bot
 from ..osu_api import api_helper
+from ..osu_api.score import Score
 from ..tournament.tournament_state import TournamentState
-from ..utils.calculate_score import calculate_score
+from ..utils.calculate_points import calculate_points
 
 
 async def check_player_scores(player_id):
@@ -16,10 +17,10 @@ async def check_player_scores(player_id):
 
         pp = round(float(valid_play_json["pp"]))
         sr = valid_play_json["beatmap"]["difficulty_rating"]
-        score = calculate_score(pp, sr)
+        score = calculate_points(Score(pp, sr))
 
         current_play = person.scores.get(beatmapset_id)
-        if calculate_score(current_play.pp, current_play.sr) < calculate_score(pp, sr):
+        if calculate_points(current_play) < score:
             current_play.pp = pp
             current_play.sr = sr
 
