@@ -8,7 +8,7 @@ from discord.ext import commands, tasks
 
 from ..osu_api import api_helper
 import bot_config
-from ..tournament import manage_tournament, registration, tournament_state
+from ..tournament import manage_tournament, registration, tournament_save_handler, tournament_state
 from ..utils import update_manager
 
 
@@ -197,8 +197,7 @@ async def check_player(player_id):
 if not os.path.isfile("../../state"):
     await update_manager.update(bot)
 else:
-    with open("state", "rb") as f:
-        state = pickle.load(f)
+    tournament_save_handler.load_tournament()
 
 
 # init
