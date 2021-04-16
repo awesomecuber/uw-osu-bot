@@ -41,6 +41,7 @@ class TournamentState:
         self.pros = {}
         self.amateurs = {}
         for person in people:
+            person.player.update()
             self.register(person)
 
     def is_running(self) -> bool:
