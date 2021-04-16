@@ -1,19 +1,15 @@
-import copy
 import os
 import logging
 import pickle
 import random
 import sys
-from typing import TypedDict
 
-import discord
-from discord.errors import NotFound
 from discord.ext import commands, tasks
 
 from ..osu_api import api_helper
 import bot_config
-from ..tournament import tournament_state
-from ..tournament import registration
+from ..tournament import manage_tournament, registration, tournament_state
+from ..utils import update_manager
 
 
 logging.basicConfig(level=logging.INFO)
@@ -30,16 +26,13 @@ else:
 async def score_check():
     # check that tournament is running
     if not tournament_state.is_running():
-        await update_display()
-        await update_detailed_display()
+        await update_manager.update(bot)
         return
 
     # print("Start score check:", datetime.datetime.now())
     for id in state["pros"] | state["amateurs"]:
         await check_player(id)
-    update_state()
-    await update_display()
-    await update_detailed_display()
+    await update_manager.update(bot)
 
 
 @tasks.loop(minutes=1)
@@ -73,46 +66,33 @@ async def get_random(ctx: commands.Context, mode: str, months: list[str]):
 
 
 @bot.command()
-async def register(ctx: commands.Context, *, username: str):
-    registration.register()
+async def register(ctx: commands.Context, *, player_name: str):
+    msg = registration.register(ctx.author.id, player_name)
+    await update_manager.update(bot)
+    await ctx.channel.send(msg)
 
 
 @bot.command()
 async def unregister(ctx: commands.Context):
-    identity = get_player_by_discord_id(ctx.author.id)
-    if len(identity) == 0:
-        await ctx.channel.send("This Discord account has no registered osu! account.")
-        return
-
-    id = identity[0]
-    username = await api_helper.get_username(id)
-
-    if id in state["pros"]:
-        state["pros"].pop(id)
-    if id in state["amateurs"]:
-        state["amateurs"].pop(id)
-    update_state()
-    await update_display()
-    await update_detailed_display()
-    await ctx.channel.send(f"Successfully unregistered {username}!")
+    msg = registration.unregister(ctx.author.id)
+    await update_manager.update(bot)
+    await ctx.channel.send(msg)
 
 
 @bot.command(name="getrank")
 async def get_rank(ctx: commands.Context, *, username: str):
-    rank, username, _ = await api_helper.get_rank_username_id(username)
-    await ctx.channel.send(f"{username} is rank {rank}.")
+    player = await api_helper.get_player_by_username(username)
+    await ctx.channel.send(f"{username} is rank #{player.rank}.")
 
 
 @bot.command()
 async def identify(ctx: commands.Context):
-    identity = get_player_by_discord_id(ctx.author.id)
-    if len(identity) == 0:
+    registered_player = registration.get_player_by_discord_id(ctx.author.id)
+    if registered_player is None:
         await ctx.channel.send("You're not registered!")
         return
 
-    id = identity[0]
-    username = await api_helper.get_username(id)
-    await ctx.channel.send(f"Registered as {username}.")
+    await ctx.channel.send(f"Registered as {registered_player.username}.")
 
 
 # a set_code is the mapset id concatenated with the mod, like "294227NM"
@@ -121,25 +101,12 @@ async def start(ctx: commands.Context, *set_codes: str):
     if ctx.author.id != bot_config.admin_id():
         return
 
-    # update rank
-
-    if len(state["beatmaps"]) != 0: # tourney not running
+    if not tournament_state.is_running():
         return
 
-    beatmap_state = {}
-    blank_scores = {}
+    manage_tournament.start_tournament()
 
-    beatmap_names = await api_helper.get_beatmap_names(*[set_code[:-2] for set_code in set_codes])
-    for set_code, map_name in zip(set_codes, beatmap_names):
-        beatmap_state[set_code[:-2]] = BeatmapData(title=map_name, mod=set_code[-2:])
-        blank_scores[set_code[:-2]] = ScoreData(pp=0, sr=0)
-
-    state["beatmaps"] = beatmap_state
-    for player_data in (state["pros"] | state["amateurs"]).values():
-        player_data["scores"] = copy.deepcopy(blank_scores)
-    update_state()
-    await update_display()
-    await update_detailed_display()
+    await update_manager.update(bot)
 
 
 @bot.command(name="stop")
@@ -147,15 +114,12 @@ async def stop(ctx: commands.Context):
     if ctx.author.id != bot_config.admin_id():
         return
 
-    if len(state["beatmaps"]) == 0: # tourney runing
+    if not tournament_state.is_running():
         return
 
-    state["beatmaps"] = {}
-    for player_data in (state["pros"] | state["amateurs"]).values():
-        player_data["scores"] = {}
-    update_state()
-    await update_display()
-    await update_detailed_display()
+    manage_tournament.stop_tournament()
+
+    await update_manager.update(bot)
 
 
 @bot.command(name="manualcheck")
@@ -166,104 +130,14 @@ async def manual_check(ctx: commands.Context):
     for id in state["pros"] | state["amateurs"]:
         # print(id, "score check:", datetime.datetime.now())
         await check_player(id)
-    update_state()
-    await update_display()
-    await update_detailed_display()
+    await update_manager.update(bot)
 
 
 @bot.command(name="printstate")
 async def print_state(ctx: commands.Context):
     if ctx.author.id != bot_config.admin_id():
         return
-    print(state)
-
-
-# helper
-async def update_display():
-    display_channel = bot.get_channel(bot_config.display_channel())
-    try:
-        display_message = await display_channel.fetch_message(display_channel.last_message_id)
-    except NotFound:
-        await display_channel.send("temp")
-        display_message = await display_channel.fetch_message(display_channel.last_message_id)
-
-    if len(state["beatmaps"]) == 0:
-        await display_message.edit(content="Tourney not currently running!")
-        return
-
-    message = "**REGISTERED**\n"
-    pro_names = []
-    amateur_names = []
-    for pro_id in state["pros"]:
-        pro_names.append(state["pros"][pro_id]["username"])
-    for amateur_id in state["amateurs"]:
-        amateur_names.append(state["amateurs"][amateur_id]["username"])
-    message += f"Pros: {', '.join(pro_names)}\nAmateurs: {', '.join(amateur_names)}\n"
-
-    message += "\n**BEATMAPS**\n"
-    for bmsid, bmsdata in state["beatmaps"].items():
-        message += f"{bmsdata['mod']}: <https://osu.ppy.sh/beatmapsets/{bmsid}> ({bmsdata['title']})\n"
-
-    message += "\n**PRO STANDINGS**\n"
-    message += get_total_leaderboards(state["pros"])
-    message += "\n**AMATEUR STANDINGS**\n"
-    message += get_total_leaderboards(state["amateurs"])
-
-    await display_message.edit(content=message)
-
-
-def get_total_leaderboards(players):
-    message = ""
-    player_scores = get_player_scores(players)
-
-    # v[1] is the regularized score, add those up for each map
-    final_scores = {
-        username: sum([v[1] for v in score_data.values()])
-        for (username, score_data) in player_scores.items()
-    } # map from username to total score
-    for i, (username, total_score) in enumerate(sorted(final_scores.items(), key=lambda x: x[1], reverse=True)):
-        message += f"{i+1}. {username} ({total_score:.1f})\n"
-    return message
-
-
-async def update_detailed_display():
-    detail_channel: discord.TextChannel = bot.get_channel(bot_config.detail_channel())
-    discord_messages = await detail_channel.history(limit=2).flatten()
-    if len(discord_messages) == 0:
-        await detail_channel.send("temp1")
-        await detail_channel.send("temp2")
-        discord_messages = await detail_channel.history(limit=2).flatten()
-    if len(discord_messages) == 1:
-        await detail_channel.send("temp")
-        discord_messages = await detail_channel.history(limit=2).flatten()
-
-    if len(state["beatmaps"]) == 0:
-        await discord_messages[0].edit(content="Tourney not currently running!")
-        await discord_messages[1].edit(content=".")
-        return
-
-    message_pros = "**PROS**\n\n"
-    message_pros += get_map_leaderboards(state["pros"])
-    message_ams = "------------------\n**AMATEURS**\n\n"
-    message_ams += get_map_leaderboards(state["amateurs"])
-
-    await discord_messages[1].edit(content=message_pros)
-    await discord_messages[0].edit(content=message_ams)
-
-
-def get_map_leaderboards(players):
-    message = ""
-    player_scores = get_player_scores(players)
-    for mapset_id, mapset_data in state["beatmaps"].items():
-        message += f"__{mapset_data['title']}__\n"
-
-        for i, (username, score_data) in enumerate(
-                    sorted(player_scores.items(), key=lambda x: x[1][mapset_id][0], reverse=True)
-                ):
-            score, normalized = score_data[mapset_id]
-            message += f"{i+1}. {username}: {score:.1f} (normalized: {normalized:.1f})\n"
-        message += "\n"
-    return message
+    print(tournament_state.get_state())
 
 
 # this is probably needlessly long
