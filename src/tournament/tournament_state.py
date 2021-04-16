@@ -3,8 +3,10 @@ from person import Person
 
 class TournamentState:
     def __init__(self):
+        # player_id : Person
         self.pros = {}
         self.amateurs = {}
+        # beatmapset_id : Beatmapset
         self.beatmaps = {}
 
     def register(self, person: Person) -> None:
