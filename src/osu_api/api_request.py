@@ -1,4 +1,4 @@
-from typing import Dict, Any
+from typing import Any, Dict, List
 
 import aiohttp
 
@@ -31,12 +31,12 @@ async def get(url: str, params: Dict[str, Any]) -> str:
         return result
 
 
-async def get_many(urls: list[str], params: list[Dict[str, Any]]) -> str:
+async def get_many(urls: List[str], params: List[Dict[str, Any]]) -> str:
     async with http_request.get_many(urls, [headers() for _ in urls], params) as result:
         return result
 
 
-async def get_ranked_beatmapsets(mode_num: int, sql_dates: list[str]) -> list[Beatmapset]:
+async def get_ranked_beatmapsets(mode_num: int, sql_dates: List[str]) -> List[Beatmapset]:
     results = []
     async with aiohttp.ClientSession() as session:
         for date in sql_dates:

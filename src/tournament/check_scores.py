@@ -6,7 +6,7 @@ from ..tournament.tournament_state import TournamentState
 from ..utils.calculate_points import calculate_points
 
 
-async def check_player_scores(player_id):
+async def check_player_scores(player_id: int) -> None:
     state = TournamentState.instance
 
     person = state.get_person_from_player_id(player_id)

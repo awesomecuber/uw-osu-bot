@@ -8,10 +8,8 @@ class TournamentState:
     instance = None  # type: TournamentState
 
     def __init__(self):
-        # player_id : Person
         self.pros = {}  # type: Dict[str: Person]
         self.amateurs = {}  # type: Dict[str: Person]
-        # beatmapset_id : Beatmapset
         self.tournamentmaps = {}  # type: Dict[str: TournamentMap]
         TournamentState.instance = self
 
@@ -21,13 +19,13 @@ class TournamentState:
         else:
             self.amateurs[person.player.player_id] = person
 
-    def unregister(self, player_id) -> None:
+    def unregister(self, player_id: int) -> None:
         if player_id in self.pros:
             self.pros.pop(player_id)
         elif player_id in self.amateurs:
             self.amateurs.pop(player_id)
 
-    def get_person_from_player_id(self, player_id) -> Optional[Person]:
+    def get_person_from_player_id(self, player_id: int) -> Optional[Person]:
         if player_id in self.pros:
             return self.pros[player_id]
         elif player_id in self.amateurs:

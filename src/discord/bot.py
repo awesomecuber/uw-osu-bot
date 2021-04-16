@@ -31,7 +31,7 @@ else:
     tournament_save_handler.load_tournament()
 
 
-async def announce(msg: str):
+async def announce(msg: str) -> None:
     channel = bot.get_channel(bot_config.announce_channel())
     await channel.send(msg)
 

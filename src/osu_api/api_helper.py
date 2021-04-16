@@ -1,4 +1,5 @@
 import asyncio
+from typing import List
 
 import api_request
 import api_urls
@@ -18,18 +19,18 @@ async def get_player_by_username(username: str) -> Player:
         return Player(player_json)
 
 
-async def get_player_by_id(player_id) -> Player:
+async def get_player_by_id(player_id: int) -> Player:
     url = api_urls.user_by_id(player_id)
     async with api_request.get(url, {"key": "id"}) as player_json:
         return Player(player_json)
 
 
-async def get_recent(player_id):
+async def get_recent(player_id: int):
     url = api_urls.recent_scores_by_id(player_id)
     return await api_request.get(url, {})
 
 
-async def get_beatmapsets(beatmapset_ids: list) -> list[Beatmapset]:
+async def get_beatmapsets(beatmapset_ids: List[int]) -> List[Beatmapset]:
     urls = [api_urls.beatmapset(beatmapset_id) for beatmapset_id in beatmapset_ids]
     async with api_request.get_many(urls, [{} for _ in urls]) as beatmapset_jsons:
         return [Beatmapset(beatmapset_json) for beatmapset_json in beatmapset_jsons]

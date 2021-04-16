@@ -1,4 +1,4 @@
-from typing import Dict, Any
+from typing import Dict, Any, List
 
 from ..osu_api.score import Score
 from ..tournament.person import Person
@@ -7,8 +7,7 @@ from ..utils.calculate_points import calculate_points
 from ..utils.sanitizer import sanitize
 
 
-# Sum players' normalized scores
-def get_total_leaderboards(people: list[Person]):
+def get_total_leaderboards(people: List[Person]) -> str:
     tournamentmaps = TournamentState.instance.tournamentmaps
     beatmapset_ids = [tournamentmap.beatmapset.beatmapset_id for tournamentmap in tournamentmaps]
 
@@ -24,8 +23,7 @@ def get_total_leaderboards(people: list[Person]):
     return message
 
 
-# Display players' raw and normalized scores
-def get_map_leaderboards(people: list[Person]):
+def get_map_leaderboards(people: List[Person]) -> str:
     message = ""
     for tournamentmap in TournamentState.instance.tournamentmaps:
         beatmapset = tournamentmap.beatmapset
@@ -49,16 +47,16 @@ def get_map_leaderboards(people: list[Person]):
     return message
 
 
-def get_beatmapset_scores(people: list[Person], beatmapset_id) -> Dict[Person, Score]:
+def get_beatmapset_scores(people: List[Person], beatmapset_id: int) -> Dict[Person, Score]:
     return {person: person.scores[beatmapset_id] for person in people}
 
 
-def get_beatmapset_pointss(people: list[Person], beatmapset_id) -> Dict[Person, float]:
+def get_beatmapset_pointss(people: List[Person], beatmapset_id: int) -> Dict[Person, float]:
     scores = get_beatmapset_scores(people, beatmapset_id)
     return {person: calculate_points(scores[person]) for person in people}
 
 
-def get_beatmapset_normalized_points(people: list[Person], beatmapset_id) -> Dict[Person, float]:
+def get_beatmapset_normalized_points(people: List[Person], beatmapset_id: int) -> Dict[Person, float]:
     pointss = get_beatmapset_pointss(people, beatmapset_id)
 
     max_points = max(pointss.values())
@@ -72,7 +70,7 @@ def get_beatmapset_normalized_points(people: list[Person], beatmapset_id) -> Dic
     return {person: normalization_constant * pointss[person] / max_points for person in people}
 
 
-def get_people_normalized_points(people: list[Person], beatmapset_ids: list) -> Dict[Person, float]:
+def get_people_normalized_points(people: List[Person], beatmapset_ids: List[int]) -> Dict[Person, float]:
     output = {person: 0 for person in people}
     for beatmapset_id in beatmapset_ids:
         beatmapset_norm_pointss = get_beatmapset_normalized_points(people, beatmapset_id)
@@ -82,6 +80,6 @@ def get_people_normalized_points(people: list[Person], beatmapset_ids: list) -> 
 
 
 # Sorts a dict from highest float value to lowest
-def sort_dict(in_dict: Dict[Any, float]) -> list[Any, float]:
+def sort_dict(in_dict: Dict[Any, float]) -> List[Any, float]:
     in_list = list(in_dict)
     return sorted(in_list, key=lambda entry: entry[1], reverse=True)

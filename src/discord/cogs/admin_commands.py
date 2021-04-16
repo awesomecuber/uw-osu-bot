@@ -1,4 +1,5 @@
 import random
+from typing import List
 
 from discord.ext.commands import Bot, Cog, command, Context
 
@@ -14,7 +15,7 @@ class AdminCommands(Cog):
         self.bot = bot
 
     @command(name="getrandom")
-    async def get_random(self, ctx: Context, mode: str, months: list[str]):
+    async def get_random(self, ctx: Context, mode: str, months: List[str]):
         if ctx.author.id != bot_config.admin_id():
             return
 

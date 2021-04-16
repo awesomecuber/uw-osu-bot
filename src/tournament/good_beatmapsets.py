@@ -1,9 +1,11 @@
+from typing import List
+
 from ..osu_api import api_request
 from ..osu_api.beatmapset import Beatmapset
 from ..utils import modes
 
 
-def _generate_sql_dates(months: list[str]) -> list[str]:
+def _generate_sql_dates(months: List[str]) -> List[str]:
     sql_dates = []
     for month in months:
         date_month, date_year = month.split("/")
@@ -13,7 +15,7 @@ def _generate_sql_dates(months: list[str]) -> list[str]:
     return sql_dates
 
 
-async def get_good_beatmapsets(mode: str, months: list[str]) -> list[Beatmapset]:
+async def get_good_beatmapsets(mode: str, months: List[str]) -> List[Beatmapset]:
     sql_dates = _generate_sql_dates(months)
     mode_id = modes.get_id(mode)
     beatmapsets = await api_request.get_ranked_beatmapsets(mode_id, sql_dates)

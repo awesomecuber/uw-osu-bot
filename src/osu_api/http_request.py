@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 import aiohttp
 
@@ -17,7 +17,7 @@ async def get(url: str, headers: Dict[str, Any], params: Dict[str, Any]):
             return response_json
 
 
-async def get_many(urls: list[str], headerss: list[Dict[str, Any]], paramss: list[Dict[str, Any]]) -> list[Any]:
+async def get_many(urls: List[str], headerss: List[Dict[str, Any]], paramss: List[Dict[str, Any]]) -> List[Any]:
     async with aiohttp.ClientSession() as session:
         result = []
 

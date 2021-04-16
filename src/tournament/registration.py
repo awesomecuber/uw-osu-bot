@@ -6,12 +6,12 @@ from person import Person
 from tournament_state import TournamentState
 
 
-def is_registered(player_id) -> bool:
+def is_registered(player_id: int) -> bool:
     state = TournamentState.instance
     return player_id in state.pros or player_id in state.amateurs
 
 
-def register(discord_id, player_name) -> str:
+def register(discord_id: int, player_name: str) -> str:
     state = TournamentState.instance
 
     # Test if discord account is already registered
@@ -32,7 +32,7 @@ def register(discord_id, player_name) -> str:
     return f"Successfully registered {player_name}!"
 
 
-def unregister(discord_id) -> str:
+def unregister(discord_id: int) -> str:
     state = TournamentState.instance
 
     # Check if player is registered
@@ -47,7 +47,7 @@ def unregister(discord_id) -> str:
     return f"Successfully unregistered {registered_player.username}!"
 
 
-def get_player_by_discord_id(discord_id) -> Optional[Player]:
+def get_player_by_discord_id(discord_id: int) -> Optional[Player]:
     state = TournamentState.instance
     for person in state.pros.values():
         if person.discord_id == discord_id:
@@ -58,7 +58,7 @@ def get_player_by_discord_id(discord_id) -> Optional[Player]:
     return None
 
 
-def get_discord_id_by_player_name(player_name):
+def get_discord_id_by_player_name(player_name: str) -> Optional[int]:
     state = TournamentState.instance
     for person in state.pros.values():
         if person.player.username == player_name:

@@ -3,9 +3,9 @@ from ..osu_api import api_helper
 
 class Player:
     def __init__(self, player_json):
-        self.player_id = player_json["id"]
-        self.username = player_json["username"]
-        self.rank = player_json["statistics"]["global_rank"]
+        self.player_id = player_json["id"]  # type: int
+        self.username = player_json["username"]  # type: str
+        self.rank = player_json["statistics"]["global_rank"]  # type: int
 
     async def update(self) -> None:
         player = await api_helper.get_player_by_id(self.player_id)

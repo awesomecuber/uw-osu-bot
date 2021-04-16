@@ -1,11 +1,12 @@
 import re
+from typing import List
 
 from tournament_map import TournamentMap
 from tournament_state import TournamentState
 from ..osu_api import api_helper
 
 
-def start_tournament(mapcodes) -> None:
+def start_tournament(mapcodes: List[str]) -> None:
     state = TournamentState.instance
 
     # update ranks
@@ -27,13 +28,13 @@ def start_tournament(mapcodes) -> None:
         person.reset_scores()
 
 
-def parse_code(mapcode: str) -> tuple[str, list[str]]:
-    beatmapset_id = re.search(r"^\d+", mapcode).group(0)
+def parse_code(mapcode: str) -> tuple[int, List[str]]:
+    beatmapset_id = int(re.search(r"^\d+", mapcode).group(0))
     mods = get_pairs(re.search(r"\a+$", mapcode).group(0))
     return beatmapset_id, mods
 
 
-def get_pairs(s: str) -> list[str]:
+def get_pairs(s: str) -> List[str]:
     char_list = list(s)
     output = []
     current = ""

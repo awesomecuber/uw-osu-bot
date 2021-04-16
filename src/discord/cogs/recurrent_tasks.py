@@ -1,5 +1,5 @@
 from discord.ext import tasks
-from discord.ext.commands import Cog
+from discord.ext.commands import Bot, Cog
 
 from .. import bot_config
 from ...tournament.check_scores import check_player_scores
@@ -11,7 +11,7 @@ from ...utils import update_manager
 class RecurrentTasks(Cog):
     instance = None
 
-    def __init__(self, bot):
+    def __init__(self, bot: Bot):
         self.bot = bot
         RecurrentTasks.instance = self
 

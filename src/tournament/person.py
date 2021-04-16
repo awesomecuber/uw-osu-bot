@@ -1,3 +1,5 @@
+from typing import Dict
+
 from ..osu_api.player import Player
 from ..osu_api.score import Score
 from ..tournament.tournament_state import TournamentState
@@ -5,9 +7,9 @@ from ..tournament.tournament_state import TournamentState
 
 class Person:
     def __init__(self, discord_id, player: Player):
-        self.discord_id = discord_id
-        self.player = player
-        self.scores = {}
+        self.discord_id = discord_id  # type: int
+        self.player = player  # type: Player
+        self.scores = {}  # type: Dict[int, Score]
         self.reset_scores()
 
     def reset_scores(self) -> None:
