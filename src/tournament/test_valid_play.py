@@ -6,9 +6,9 @@ def is_valid_play(play_json) -> bool:
 
     # Is in the pool?
     beatmapset_id = str(play_json["beatmap"]["beatmapset_id"])
-    if beatmapset_id not in state.beatmaps:
+    if beatmapset_id not in state.tournamentmaps:
         return False
-    tournament_map = state.beatmaps.get(beatmapset_id)
+    tournament_map = state.tournamentmaps[beatmapset_id]
 
     # Was up for pp?
     if play_json["pp"] is None:
