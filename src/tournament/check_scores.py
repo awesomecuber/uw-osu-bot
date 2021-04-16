@@ -15,9 +15,9 @@ async def check_player_scores(player_id: int) -> None:
     valid_plays_jsons = [play_json for play_json in recent_plays_jsons if is_valid_play(play_json)]
 
     for valid_play_json in valid_plays_jsons:
-        beatmapset_id = str(valid_play_json["beatmap"]["beatmapset_id"])
+        beatmapset_id = valid_play_json["beatmap"]["beatmapset_id"]
 
-        pp = round(float(valid_play_json["pp"]))
+        pp = float(valid_play_json["pp"])
         sr = valid_play_json["beatmap"]["difficulty_rating"]
         score = calculate_points(Score(pp, sr))
 
