@@ -28,19 +28,19 @@ class AdminCommands(Cog):
         await ctx.channel.send(message)
 
     # a set_code is the mapset id concatenated with the mod, like "294227NM"
-    @command(name="start")
+    @command()
     async def start(self, ctx: Context, *set_codes: str):
         if ctx.author.id != bot_config.admin_id():
             return
 
-        if not TournamentState.instance.is_running():
+        if TournamentState.instance.is_running():
             return
 
-        manage_tournament.start_tournament(list(set_codes))
-
+        await manage_tournament.start_tournament(list(set_codes))
+        print("starting tournament")
         await update_manager.update(self.bot)
 
-    @command(name="stop")
+    @command()
     async def stop(self, ctx: Context):
         if ctx.author.id != bot_config.admin_id():
             return
@@ -49,7 +49,7 @@ class AdminCommands(Cog):
             return
 
         manage_tournament.stop_tournament()
-
+        print("stopping tournament")
         await update_manager.update(self.bot)
 
     @command(name="manualcheck")
@@ -58,4 +58,4 @@ class AdminCommands(Cog):
             return
 
         from .recurrent_tasks import get_recurrent_task_instance
-        get_recurrent_task_instance().score_check.start()
+        await get_recurrent_task_instance().score_check()

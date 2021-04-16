@@ -22,15 +22,16 @@ async def start_tournament(mapcodes: List[str]) -> None:
     state.tournamentmaps = new_tournamentmaps
 
     # reset scores
-    for person in state.pros:
+    for person in state.pros.values():
         person.reset_scores()
-    for person in state.amateurs:
+    for person in state.amateurs.values():
         person.reset_scores()
 
 
 def parse_code(mapcode: str) -> tuple[int, List[str]]:
+    print(mapcode)
     beatmapset_id = int(re.search(r"^\d+", mapcode).group(0))
-    mods = get_pairs(re.search(r"\a+$", mapcode).group(0))
+    mods = get_pairs(re.search(r"[A-Z]+$", mapcode).group(0))
     return beatmapset_id, mods
 
 

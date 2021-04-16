@@ -8,7 +8,7 @@ from ..utils.sanitizer import sanitize
 
 
 def get_total_leaderboards(people: List[Person]) -> str:
-    tournamentmaps = TournamentState.instance.tournamentmaps
+    tournamentmaps = TournamentState.instance.tournamentmaps.values()
     beatmapset_ids = [tournamentmap.beatmapset.beatmapset_id for tournamentmap in tournamentmaps]
 
     people_norm_pointss = get_people_normalized_points(people, beatmapset_ids)
@@ -25,7 +25,7 @@ def get_total_leaderboards(people: List[Person]) -> str:
 
 def get_map_leaderboards(people: List[Person]) -> str:
     message = ""
-    for tournamentmap in TournamentState.instance.tournamentmaps:
+    for tournamentmap in TournamentState.instance.tournamentmaps.values():
         beatmapset = tournamentmap.beatmapset
         beatmapset_id = beatmapset.beatmapset_id
 
@@ -48,15 +48,24 @@ def get_map_leaderboards(people: List[Person]) -> str:
 
 
 def get_beatmapset_scores(people: List[Person], beatmapset_id: int) -> Dict[Person, Score]:
+    if len(people) == 0:
+        return {}
+
     return {person: person.scores[beatmapset_id] for person in people}
 
 
 def get_beatmapset_pointss(people: List[Person], beatmapset_id: int) -> Dict[Person, float]:
+    if len(people) == 0:
+        return {}
+
     scores = get_beatmapset_scores(people, beatmapset_id)
     return {person: calculate_points(scores[person]) for person in people}
 
 
 def get_beatmapset_normalized_points(people: List[Person], beatmapset_id: int) -> Dict[Person, float]:
+    if len(people) == 0:
+        return {}
+
     pointss = get_beatmapset_pointss(people, beatmapset_id)
 
     max_points = max(pointss.values())
@@ -81,5 +90,6 @@ def get_people_normalized_points(people: List[Person], beatmapset_ids: List[int]
 
 # Sorts a dict from highest float value to lowest
 def sort_dict(in_dict: Dict[Any, float]) -> List[Tuple[Any, float]]:
-    in_list = list(in_dict)
+    in_list = [(k, v) for k, v in in_dict.items()]
+    print(in_list)
     return sorted(in_list, key=lambda entry: entry[1], reverse=True)

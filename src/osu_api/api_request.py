@@ -46,10 +46,11 @@ async def get_ranked_beatmapsets(mode_num: int, sql_dates: List[str]) -> List[Be
                     "page": cur_page
                 }
                 response = await session.get("beatmapsets/search", params=params, headers=headers())
-                beatmapsets_jsons = response.json()["beatmapsets"]
-                for beatmapset_json in beatmapsets_jsons:
+                beatmapsets_jsons = await response.json()
+                beatmapsets_json = beatmapsets_jsons["beatmapsets"]
+                for beatmapset_json in beatmapsets_json:
                     results.append(Beatmapset(beatmapset_json))
                 cur_page += 1
-                if len(beatmapsets_jsons) < 50:  # last page
+                if len(beatmapsets_json) < 50:  # last page
                     break
     return results

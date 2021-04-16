@@ -13,6 +13,6 @@ class Person:
 
     def reset_scores(self) -> None:
         from ..tournament.tournament_state import TournamentState
-        tournamentmaps = TournamentState.instance.tournamentmaps
+        tournamentmaps = TournamentState.instance.tournamentmaps.values()
         beatmapset_ids = [tournamentmap.beatmapset.beatmapset_id for tournamentmap in tournamentmaps]
         self.scores = {beatmapset_id: Score(0, 0) for beatmapset_id in beatmapset_ids}

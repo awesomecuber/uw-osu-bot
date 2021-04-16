@@ -9,7 +9,7 @@ from ..utils.calculate_points import calculate_points
 async def check_player_scores(player_id: int) -> None:
     state = TournamentState.instance
 
-    person = state.get_person_from_player_id(player_id)
+    person = state.get_person_by_player_id(player_id)
 
     recent_plays_jsons = await api_helper.get_recent(player_id)
     valid_plays_jsons = [play_json for play_json in recent_plays_jsons if is_valid_play(play_json)]

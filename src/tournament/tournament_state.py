@@ -26,7 +26,13 @@ class TournamentState:
         elif player_id in self.amateurs:
             self.amateurs.pop(player_id)
 
-    def get_person_from_player_id(self, player_id: int) -> Optional[Person]:
+    def get_people(self) -> List[Person]:
+        output = []  # type: List[Person]
+        output.extend(self.pros.values())
+        output.extend(self.amateurs.values())
+        return output
+
+    def get_person_by_player_id(self, player_id: int) -> Optional[Person]:
         if player_id in self.pros:
             return self.pros[player_id]
         elif player_id in self.amateurs:
