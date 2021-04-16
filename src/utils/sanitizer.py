@@ -1,5 +1,5 @@
 import re
 
 
-def sanitize(s):
+def sanitize(s: str) -> str:
     return re.sub("_", "\\_", s)

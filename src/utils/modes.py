@@ -1,4 +1,4 @@
-def get_id(mode_name: str):
+def get_id(mode_name: str) -> int:
     if mode_name == "standard" or mode_name == "std":
         return 0
     elif mode_name == "mania":
