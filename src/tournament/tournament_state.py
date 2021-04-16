@@ -12,7 +12,7 @@ class TournamentState:
         self.pros = {}  # type: Dict[str: Person]
         self.amateurs = {}  # type: Dict[str: Person]
         # beatmapset_id : Beatmapset
-        self.beatmaps = {}  # type: Dict[str: TournamentMap]
+        self.tournamentmaps = {}  # type: Dict[str: TournamentMap]
         TournamentState.instance = self
 
     def register(self, person: Person) -> None:
