@@ -45,4 +45,4 @@ class TournamentState:
             self.register(person)
 
     def is_running(self) -> bool:
-        return len(self.beatmaps) > 0
+        return len(self.tournamentmaps) > 0
