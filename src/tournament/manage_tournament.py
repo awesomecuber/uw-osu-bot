@@ -33,7 +33,6 @@ def parse_code(mapcode: str) -> tuple[str, list[str]]:
     return beatmapset_id, mods
 
 
-
 def get_pairs(s: str) -> list[str]:
     char_list = list(s)
     output = []

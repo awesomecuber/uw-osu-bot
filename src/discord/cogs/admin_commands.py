@@ -36,7 +36,7 @@ class AdminCommands(Cog):
         if not TournamentState.instance.is_running():
             return
 
-        manage_tournament.start_tournament()
+        manage_tournament.start_tournament(list(set_codes))
 
         await update_manager.update(self.bot)
 
