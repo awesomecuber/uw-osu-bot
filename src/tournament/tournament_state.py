@@ -1,14 +1,32 @@
-class State:
+from person import Person
+
+
+class TournamentState:
     def __init__(self):
         self.pros = {}
         self.amateurs = {}
         self.beatmaps = {}
 
+    def register(self, person: Person) -> None:
+        if person.player.rank < 50000:
+            self.pros[person.player.player_id] = person
+        else:
+            self.amateurs[person.player.player_id] = person
 
-state = State()
+    def update_ranks(self) -> None:
+        people = []
+        people.extend(self.pros.values())
+        people.extend(self.amateurs.values())
+        self.pros = {}
+        self.amateurs = {}
+        for person in people:
+            self.register(person)
 
 
-def get_state() -> State:
+state = TournamentState()
+
+
+def get_state() -> TournamentState:
     return state
 
 
