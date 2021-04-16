@@ -1,4 +1,7 @@
+from typing import Optional
+
 from ..osu_api import api_helper
+from ..osu_api.player import Player
 from person import Person
 import tournament_state
 
@@ -11,19 +14,59 @@ def is_registered(player_id) -> bool:
 def register(discord_id, player_name) -> str:
     state = tournament_state.get_state()
 
-    identity = get_player_by_discord_id(discord_id)
-    if len(identity) != 0:
-        username = await api_helper.get_username(identity[0])
-        return f"This Discord account has already registered osu! account: {username}."
-
-    player = await api_helper.get_player_by_username(player_name)
-    if is_registered(player.player_id):
+    # Test if discord account is already registered
+    registered_discord_id = get_discord_id_by_player_name(player_name)
+    if registered_discord_id is not None:
         return "You're already registered!"
 
+    # Test if player is already registered to another discord account
+    registered_player = get_player_by_discord_id(discord_id)
+    if registered_player is not None:
+        return f"This Discord account has already registered osu! account: {registered_player.username}."
+
+    # Register the player
+    player = await api_helper.get_player_by_username(player_name)
     person = Person(discord_id, player)
     state.register(person)
 
-    update_state()
-    await update_display()
-    await update_detailed_display()
     return f"Successfully registered {player_name}!"
+
+
+def unregister(discord_id) -> str:
+    state = tournament_state.get_state()
+
+    # Check if player is registered
+    registered_player = get_player_by_discord_id(discord_id)
+    if registered_player is None:
+        return "This Discord account has no registered osu! account."
+
+    # Remove player
+    player_id = registered_player.player_id
+    if player_id in state.pros:
+        state.pros.pop(player_id)
+    elif player_id in state.amateurs:
+        state.amateurs.pop(player_id)
+
+    return f"Successfully unregistered {registered_player.username}!"
+
+
+def get_player_by_discord_id(discord_id) -> Optional[Player]:
+    state = tournament_state.get_state()
+    for person in state.pros.values():
+        if person.discord_id == discord_id:
+            return person.player
+    for person in state.amateurs.values():
+        if person.discord_id == discord_id:
+            return person.player
+    return None
+
+
+def get_discord_id_by_player_name(player_name):
+    state = tournament_state.get_state()
+    for person in state.pros.values():
+        if person.player.username == player_name:
+            return person.discord_id
+    for person in state.amateurs.values():
+        if person.player.username == player_name:
+            return person.discord_id
+    return None

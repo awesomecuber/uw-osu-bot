@@ -168,24 +168,6 @@ def get_player_scores(players):
     return to_return
 
 
-def is_valid_play(s):
-    bmsid = str(s["beatmap"]["beatmapset_id"])
-
-    if bmsid not in state["beatmaps"]:
-        return False
-
-    if s["pp"] is None:
-        return False
-
-    map_mod = state["beatmaps"][bmsid]["mod"]
-    if map_mod == "NM":
-        return len(s["mods"]) == 0
-    elif map_mod == "HR":
-        return len(s["mods"]) == 1 and s["mods"][0] == "HR"
-
-    return True # shouldn't reach here
-
-
 def calculate_score(pp, sr):
     return pp * sr**2
 
@@ -212,28 +194,8 @@ async def check_player(player_id):
             player_data["scores"][beatmapset_id]["sr"] = sr
 
 
-# state helpers
-def get_all_registered():
-    return list(state["pros"].keys()) + list(state["amateurs"].keys())
-
-
-def get_player_by_discord_id(discord_id):
-    return [k for (k, v) in (state["pros"] | state["amateurs"]).items() if v["discord_id"] == discord_id]
-
-
-def get_player_data_by_player_id(player_id):
-    return [v for (k, v) in (state["pros"] | state["amateurs"]).items() if k == player_id][0]
-
-
-# saving/loading state
-def update_state():
-    write_file = open("state", "wb")
-    pickle.dump(state, write_file)
-    write_file.close()
-
-
-if not os.path.isfile("state"):
-    update_state()
+if not os.path.isfile("../../state"):
+    await update_manager.update(bot)
 else:
     with open("state", "rb") as f:
         state = pickle.load(f)
