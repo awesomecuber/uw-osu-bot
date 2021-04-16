@@ -1,9 +1,9 @@
-from dotenv import load_dotenv
-import os
+from dotenv import dotenv_values
 
-load_dotenv()
-_client_id = os.environ["CLIENT_ID"]
-_client_secret = os.environ["CLIENT_SECRET"]
+configs = dotenv_values("../../.env")
+
+_client_id = configs["CLIENT_ID"]
+_client_secret = configs["CLIENT_SECRET"]
 
 
 def client_id():

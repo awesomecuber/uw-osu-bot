@@ -1,15 +1,14 @@
-from dotenv import load_dotenv
-import os
+from dotenv import dotenv_values
 
-load_dotenv()
+configs = dotenv_values("../../.env")
 
-_bot_token = os.environ["BOT_TOKEN"]
+_bot_token = configs["BOT_TOKEN"]
 
-_admin_id = os.environ["ADMIN_ID"]
+_admin_id = int(configs["ADMIN_ID"])
 
-_announce_channel = os.environ["ANNOUNCE_CHANNEL"]
-_display_channel = os.environ["DISPLAY_CHANNEL"]
-_detail_channel = os.environ["DETAIL_CHANNEL"]
+_announce_channel = int(configs["ANNOUNCE_CHANNEL"])
+_display_channel = int(configs["DISPLAY_CHANNEL"])
+_detail_channel = int(configs["DETAIL_CHANNEL"])
 
 
 def bot_token():
