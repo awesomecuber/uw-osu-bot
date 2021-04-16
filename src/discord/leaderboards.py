@@ -41,7 +41,7 @@ def get_map_leaderboards(people: list[Person]):
             person = people[i]
             username = sanitize(person.player.username)
 
-            points = pointss.get(person)
+            points = pointss[person]
             norm_points = sorted_norm_pointss[i]
 
             message += f"{i+1}. {username}: {points:.1f} (normalized: {norm_points:.1f})\n"
@@ -50,12 +50,12 @@ def get_map_leaderboards(people: list[Person]):
 
 
 def get_beatmapset_scores(people: list[Person], beatmapset_id) -> Dict[Person, Score]:
-    return {person: person.scores.get(beatmapset_id) for person in people}
+    return {person: person.scores[beatmapset_id] for person in people}
 
 
 def get_beatmapset_pointss(people: list[Person], beatmapset_id) -> Dict[Person, float]:
     scores = get_beatmapset_scores(people, beatmapset_id)
-    return {person: calculate_points(scores.get(person)) for person in people}
+    return {person: calculate_points(scores[person]) for person in people}
 
 
 def get_beatmapset_normalized_points(people: list[Person], beatmapset_id) -> Dict[Person, float]:
@@ -69,7 +69,7 @@ def get_beatmapset_normalized_points(people: list[Person], beatmapset_id) -> Dic
     # most possible points for this beatmapset
     normalization_constant = 1000.0 / len(TournamentState.instance.tournamentmaps)
 
-    return {person: normalization_constant * pointss.get(person) / max_points for person in people}
+    return {person: normalization_constant * pointss[person] / max_points for person in people}
 
 
 def get_people_normalized_points(people: list[Person], beatmapset_ids: list) -> Dict[Person, float]:

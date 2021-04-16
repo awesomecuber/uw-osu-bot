@@ -29,9 +29,9 @@ class TournamentState:
 
     def get_person_from_player_id(self, player_id) -> Optional[Person]:
         if player_id in self.pros:
-            return self.pros.get(player_id)
+            return self.pros[player_id]
         elif player_id in self.amateurs:
-            return self.amateurs.get(player_id)
+            return self.amateurs[player_id]
         return None
 
     def update_ranks(self) -> None:
