@@ -2,7 +2,6 @@ from typing import Dict, List, Optional
 
 from .person import Person
 from .tournament_map import TournamentMap
-from ..utils.update_player import update_player
 
 
 class TournamentState:
@@ -44,7 +43,7 @@ class TournamentState:
         self.pros = {}
         self.amateurs = {}
         for person in people:
-            await update_player(person.player)
+            await person.player.update()
             self.register(person)
 
     def is_running(self) -> bool:
