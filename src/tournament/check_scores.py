@@ -13,7 +13,6 @@ async def check_player_scores(player_id: int) -> List[str]:
     person = state.get_person_by_player_id(player_id)
 
     recent_plays_jsons = await api_helper.get_recent(player_id)
-    print(recent_plays_jsons)
     valid_plays_jsons = [play_json for play_json in recent_plays_jsons if is_valid_play(play_json)]
 
     output = []

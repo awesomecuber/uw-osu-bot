@@ -34,14 +34,18 @@ async def on_ready():
     print(bot.user.id)
     print('------')
 
+    # Initialize state
+    if os.path.isfile("state"):
+        print("Attempting to load state from file...")
+        tournament_save_handler.load_tournament()
+        print("State loading complete")
+    else:
+        print("No state file found")
+        await update_manager.update(bot)
+
+    # Start tasks
     get_recurrent_task_instance().score_check.start()
     get_recurrent_task_instance().reset_token.start()
-
-    # Initialization
-    if not os.path.isfile("../../state"):
-        await update_manager.update(bot)
-    else:
-        tournament_save_handler.load_tournament()
 
 
 bot.run(bot_config.bot_token())
