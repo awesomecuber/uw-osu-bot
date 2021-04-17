@@ -5,7 +5,7 @@ from ..osu_api.score import Score
 
 
 class Person:
-    def __init__(self, discord_id, player: Player):
+    def __init__(self, discord_id: int, player: Player):
         self.discord_id = discord_id  # type: int
         self.player = player  # type: Player
         self.scores = {}  # type: Dict[int, Score]

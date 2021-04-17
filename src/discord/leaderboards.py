@@ -3,7 +3,6 @@ from typing import Any, Dict, List, Tuple
 from ..osu_api.score import Score
 from ..tournament.person import Person
 from ..tournament.tournament_state import TournamentState
-from ..utils.calculate_points import calculate_points
 from ..utils.sanitizer import sanitize
 
 
@@ -59,7 +58,7 @@ def get_beatmapset_pointss(people: List[Person], beatmapset_id: int) -> Dict[Per
         return {}
 
     scores = get_beatmapset_scores(people, beatmapset_id)
-    return {person: calculate_points(scores[person]) for person in people}
+    return {person: scores[person].calculate_points() for person in people}
 
 
 def get_beatmapset_normalized_points(people: List[Person], beatmapset_id: int) -> Dict[Person, float]:
