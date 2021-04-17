@@ -58,4 +58,4 @@ class AdminCommands(Cog):
             return
 
         from .recurrent_tasks import get_recurrent_task_instance
-        await get_recurrent_task_instance().score_check()
+        get_recurrent_task_instance().score_check.restart()

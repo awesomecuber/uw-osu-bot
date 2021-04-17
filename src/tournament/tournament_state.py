@@ -39,14 +39,12 @@ class TournamentState:
             return self.amateurs[player_id]
         return None
 
-    def update_ranks(self) -> None:
-        people = []  # type: List[Person]
-        people.extend(self.pros.values())
-        people.extend(self.amateurs.values())
+    async def update_ranks(self) -> None:
+        people = self.get_people()
         self.pros = {}
         self.amateurs = {}
         for person in people:
-            update_player(person.player)
+            await update_player(person.player)
             self.register(person)
 
     def is_running(self) -> bool:

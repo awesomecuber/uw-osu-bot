@@ -1,9 +1,9 @@
 from discord.ext import tasks
 from discord.ext.commands import Bot, Cog
-
 from .. import bot_config
-from ...tournament.tournament_state import TournamentState
 from ...osu_api import api_helper
+from ...tournament.tournament_state import TournamentState
+from ...tournament.check_scores import check_player_scores
 from ...utils import update_manager
 
 
@@ -16,6 +16,7 @@ class RecurrentTasks(Cog):
 
     @tasks.loop(minutes=1)
     async def score_check(self):
+
         state = TournamentState.instance
 
         # check that tournament is running
@@ -23,13 +24,16 @@ class RecurrentTasks(Cog):
             await update_manager.update(self.bot)
             return
 
-        from ...tournament.check_scores import check_player_scores
+        for person in state.get_people():
+            update_strings = await check_player_scores(person.player.player_id)
+            for update_string in update_strings:
+                await self._announce(update_string)
 
-        for player_id in state.pros:
-            await check_player_scores(player_id)
-        for player_id in state.amateurs:
-            await check_player_scores(player_id)
         await update_manager.update(self.bot)
+
+    async def _announce(self, msg: str) -> None:
+        channel = self.bot.get_channel(bot_config.announce_channel())
+        await channel.send(msg)
 
     @tasks.loop(minutes=1)
     async def time_check(self):

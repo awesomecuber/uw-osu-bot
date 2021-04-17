@@ -31,16 +31,16 @@ def get_map_leaderboards(people: List[Person]) -> str:
 
         pointss = get_beatmapset_pointss(people, beatmapset_id)
         norm_pointss = get_beatmapset_normalized_points(people, beatmapset_id)
-        sorted_norm_pointss = sort_dict(norm_pointss)
+        sorted_norm_pointss = sort_dict(norm_pointss)  # type: List[Tuple[Person, float]]
 
         message += f"__{sanitize(beatmapset.ascii_name)}__\n"
 
         for i in range(len(people)):
-            person = people[i]
+            person = sorted_norm_pointss[i][0]
             username = sanitize(person.player.username)
 
             points = pointss[person]
-            norm_points = sorted_norm_pointss[i]
+            norm_points = sorted_norm_pointss[i][1]
 
             message += f"{i+1}. {username}: {points:.1f} (normalized: {norm_points:.1f})\n"
         message += "\n"
@@ -91,5 +91,4 @@ def get_people_normalized_points(people: List[Person], beatmapset_ids: List[int]
 # Sorts a dict from highest float value to lowest
 def sort_dict(in_dict: Dict[Any, float]) -> List[Tuple[Any, float]]:
     in_list = [(k, v) for k, v in in_dict.items()]
-    print(in_list)
     return sorted(in_list, key=lambda entry: entry[1], reverse=True)

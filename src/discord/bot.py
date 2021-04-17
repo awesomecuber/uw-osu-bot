@@ -26,11 +26,6 @@ bot.add_cog(RecurrentTasks(bot))
 bot.add_cog(UserCommands(bot))
 
 
-async def announce(msg: str) -> None:
-    channel = bot.get_channel(bot_config.announce_channel())
-    await channel.send(msg)
-
-
 # init
 @bot.event
 async def on_ready():

@@ -10,7 +10,7 @@ async def start_tournament(mapcodes: List[str]) -> None:
     state = TournamentState.instance
 
     # update ranks
-    state.update_ranks()
+    await state.update_ranks()
 
     # update beatmaps
     new_tournamentmaps = {}
@@ -22,9 +22,7 @@ async def start_tournament(mapcodes: List[str]) -> None:
     state.tournamentmaps = new_tournamentmaps
 
     # reset scores
-    for person in state.pros.values():
-        person.reset_scores()
-    for person in state.amateurs.values():
+    for person in state.get_people():
         person.reset_scores()
 
 
@@ -51,7 +49,5 @@ def stop_tournament() -> None:
     state = TournamentState.instance
 
     state.beatmaps = {}
-    for person in state.pros.values():
-        person.reset_scores()
-    for person in state.amateurs.values():
+    for person in state.get_people():
         person.reset_scores()

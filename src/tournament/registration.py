@@ -49,10 +49,7 @@ def unregister(discord_id: int) -> str:
 
 def get_player_by_discord_id(discord_id: int) -> Optional[Player]:
     state = TournamentState.instance
-    for person in state.pros.values():
-        if person.discord_id == discord_id:
-            return person.player
-    for person in state.amateurs.values():
+    for person in state.get_people():
         if person.discord_id == discord_id:
             return person.player
     return None
@@ -60,10 +57,7 @@ def get_player_by_discord_id(discord_id: int) -> Optional[Player]:
 
 def get_discord_id_by_player_name(player_name: str) -> Optional[int]:
     state = TournamentState.instance
-    for person in state.pros.values():
-        if person.player.username == player_name:
-            return person.discord_id
-    for person in state.amateurs.values():
+    for person in state.get_people():
         if person.player.username == player_name:
             return person.discord_id
     return None

@@ -5,7 +5,7 @@ def is_valid_play(play_json) -> bool:
     state = TournamentState.instance
 
     # Is in the pool?
-    beatmapset_id = str(play_json["beatmap"]["beatmapset_id"])
+    beatmapset_id = play_json["beatmap"]["beatmapset_id"]
     if beatmapset_id not in state.tournamentmaps:
         return False
     tournament_map = state.tournamentmaps[beatmapset_id]
@@ -18,7 +18,7 @@ def is_valid_play(play_json) -> bool:
     play_mods = play_json["mods"]
 
     # NM
-    if required_mods == ["NM"]:
+    if len(required_mods) == 1 and required_mods[0] == "NM":
         return len(play_mods) == 0
 
     # Count must be the same
