@@ -31,8 +31,9 @@ def make_display_message() -> str:
     for tournamentmap in state.tournamentmaps.values():
         beatmapset_id = tournamentmap.beatmapset.beatmapset_id
         beatmapset_name = tournamentmap.beatmapset.ascii_name
-        message += f"{tournamentmap.mods}: <https://osu.ppy.sh/beatmapsets/{beatmapset_id}> ({beatmapset_name})\n"
+        mods_string = "".join(tournamentmap.mods)
 
+        message += f"{mods_string}: <https://osu.ppy.sh/beatmapsets/{beatmapset_id}> ({beatmapset_name})\n"
     message += "\n**PRO STANDINGS**\n"
     message += leaderboards.get_total_leaderboards(list(state.pros.values()))
     message += "\n**AMATEUR STANDINGS**\n"
