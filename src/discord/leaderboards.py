@@ -7,7 +7,7 @@ from ..utils.sanitizer import sanitize
 
 
 def get_total_leaderboards(people: List[Person]) -> str:
-    tournamentmaps = TournamentState.instance.tournamentmaps.values()
+    tournamentmaps = TournamentState.instance.get_tournamentmaps()
     beatmapset_ids = [tournamentmap.beatmapset.beatmapset_id for tournamentmap in tournamentmaps]
 
     people_norm_pointss = get_people_normalized_points(people, beatmapset_ids)
@@ -24,7 +24,7 @@ def get_total_leaderboards(people: List[Person]) -> str:
 
 def get_map_leaderboards(people: List[Person]) -> str:
     message = ""
-    for tournamentmap in TournamentState.instance.tournamentmaps.values():
+    for tournamentmap in TournamentState.instance.get_tournamentmaps():
         beatmapset = tournamentmap.beatmapset
         beatmapset_id = beatmapset.beatmapset_id
 
@@ -73,7 +73,7 @@ def get_beatmapset_normalized_points(people: List[Person], beatmapset_id: int) -
         max_points = 1
 
     # most possible points for this beatmapset
-    normalization_constant = 1000.0 / len(TournamentState.instance.tournamentmaps)
+    normalization_constant = 1000.0 / len(TournamentState.instance.get_tournamentmaps())
 
     return {person: normalization_constant * pointss[person] / max_points for person in people}
 

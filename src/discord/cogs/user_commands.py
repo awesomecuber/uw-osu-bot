@@ -2,6 +2,7 @@ from discord.ext.commands import Bot, Cog, command, Context
 
 from ...osu_api import api_helper
 from ...tournament import registration
+from ...tournament.tournament_state import TournamentState
 from ...utils import update_manager
 
 
@@ -28,9 +29,10 @@ class UserCommands(Cog):
 
     @command()
     async def identify(self, ctx: Context):
-        registered_player = registration.get_player_by_discord_id(ctx.author.id)
-        if registered_player is None:
+        state = TournamentState.instance
+        registered_person = state.get_person_by_discord_id(ctx.author.id)
+        if registered_person is None:
             await ctx.channel.send("You're not registered!")
             return
 
-        await ctx.channel.send(f"Registered as {registered_player.username}.")
+        await ctx.channel.send(f"Registered as {registered_person.player.username}.")

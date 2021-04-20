@@ -24,7 +24,7 @@ class RecurrentTasks(Cog):
             await update_manager.update(self.bot)
             return
 
-        for person in state.get_people():
+        for person in state.get_all_people():
             update_strings = await check_player_scores(person.player.player_id)
             for update_string in update_strings:
                 await self._announce(update_string)

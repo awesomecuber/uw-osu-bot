@@ -23,21 +23,21 @@ def make_display_message() -> str:
     state = TournamentState.instance
 
     message = "**REGISTERED**\n"
-    pro_names = [person.player.username for person in state.pros.values()]
-    amateur_names = [person.player.username for person in state.pros.values()]
+    pro_names = [person.player.username for person in state.get_pros()]
+    amateur_names = [person.player.username for person in state.get_amateurs()]
     message += f"Pros: {', '.join(pro_names)}\nAmateurs: {', '.join(amateur_names)}\n"
 
     message += "\n**BEATMAPS**\n"
-    for tournamentmap in state.tournamentmaps.values():
+    for tournamentmap in state.get_tournamentmaps():
         beatmapset_id = tournamentmap.beatmapset.beatmapset_id
         beatmapset_name = tournamentmap.beatmapset.ascii_name
         mods_string = "".join(tournamentmap.mods)
 
         message += f"{mods_string}: <https://osu.ppy.sh/beatmapsets/{beatmapset_id}> ({beatmapset_name})\n"
     message += "\n**PRO STANDINGS**\n"
-    message += leaderboards.get_total_leaderboards(list(state.pros.values()))
+    message += leaderboards.get_total_leaderboards(state.get_pros())
     message += "\n**AMATEUR STANDINGS**\n"
-    message += leaderboards.get_total_leaderboards(list(state.amateurs.values()))
+    message += leaderboards.get_total_leaderboards(state.get_amateurs())
 
     return message
 
@@ -59,9 +59,9 @@ async def update_detailed_display(bot: Bot) -> None:
 def make_detailed_display_messages() -> Tuple[str, str]:
     state = TournamentState.instance
     message_pros = "**PROS**\n\n"
-    message_pros += leaderboards.get_map_leaderboards(list(state.pros.values()))
+    message_pros += leaderboards.get_map_leaderboards(state.get_pros())
     message_ams = "------------------\n**AMATEURS**\n\n"
-    message_ams += leaderboards.get_map_leaderboards(list(state.amateurs.values()))
+    message_ams += leaderboards.get_map_leaderboards(state.get_amateurs())
     return message_pros, message_ams
 
 
