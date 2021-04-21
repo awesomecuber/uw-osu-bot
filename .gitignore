@@ -1,7 +1,14 @@
+# Python stuff
+__pycache__
+
+# Secrets
 access_token
-config.py
-help.py
 state
 state-backup
-__pycache__
+
+# Other stuff
+help.py
 convert_beatmaps.py
+
+# Ignore .vscode and .idea
+.*
