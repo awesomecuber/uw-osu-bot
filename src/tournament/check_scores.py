@@ -1,13 +1,11 @@
+from . import state
 from .test_valid_play import is_valid_play
 from ..osu_api import api_helper
 from ..osu_api.score import Score
-from ..tournament.tournament_state import TournamentState
 
 
 async def check_player_scores(player_id: int) -> list[str]:
-    state = TournamentState.instance
-
-    person = state.get_person_by_player_id(player_id)
+    person = state.tournament.get_person_by_player_id(player_id)
 
     recent_plays_jsons = await api_helper.get_recent(player_id)
     valid_plays_jsons = [play_json for play_json in recent_plays_jsons if is_valid_play(play_json)]

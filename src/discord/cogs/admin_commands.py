@@ -4,8 +4,7 @@ from typing import List
 from discord.ext.commands import Bot, Cog, command, Context
 
 from .. import bot_config
-from ...tournament import good_beatmapsets, manage_tournament
-from ...tournament.tournament_state import TournamentState
+from ...tournament import good_beatmapsets, manage_tournament, state
 from ...utils import update_manager
 
 
@@ -33,7 +32,7 @@ class AdminCommands(Cog):
         if ctx.author.id != bot_config.admin_id():
             return
 
-        if TournamentState.instance.is_running():
+        if state.tournament.is_running():
             return
 
         await manage_tournament.start_tournament(list(set_codes))
@@ -45,7 +44,7 @@ class AdminCommands(Cog):
         if ctx.author.id != bot_config.admin_id():
             return
 
-        if not TournamentState.instance.is_running():
+        if not state.tournament.is_running():
             return
 
         manage_tournament.stop_tournament()

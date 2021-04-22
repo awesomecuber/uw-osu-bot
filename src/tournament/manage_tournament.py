@@ -1,15 +1,13 @@
 import re
 
 from .tournament_map import TournamentMap
-from .tournament_state import TournamentState
+from . import state
 from ..osu_api import api_helper
 
 
 async def start_tournament(mapcodes: list[str]) -> None:
-    state = TournamentState.instance
-
     # update ranks
-    await state.update_ranks()
+    await state.tournament.update_ranks()
 
     # update beatmaps
     new_tournamentmaps = {}
@@ -18,10 +16,10 @@ async def start_tournament(mapcodes: list[str]) -> None:
     beatmapsets = await api_helper.get_beatmapsets(beatmapset_ids)
     for i in range(len(mapcodes)):
         new_tournamentmaps[beatmapset_ids[i]] = TournamentMap(beatmapsets[i], mapcode_datas[i][1])
-    state.tournamentmaps = new_tournamentmaps
+    state.tournament.tournamentmaps = new_tournamentmaps
 
     # reset scores
-    for person in state.get_all_people():
+    for person in state.tournament.get_all_people():
         person.reset_scores()
 
 
@@ -45,8 +43,6 @@ def get_pairs(s: str) -> list[str]:
 
 
 def stop_tournament() -> None:
-    state = TournamentState.instance
-
-    state.beatmaps = {}
-    for person in state.get_all_people():
+    state.tournament.beatmaps = {}
+    for person in state.tournament.get_all_people():
         person.reset_scores()

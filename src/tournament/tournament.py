@@ -3,16 +3,12 @@ from typing import Optional
 from .person import Person
 from .tournament_map import TournamentMap
 
-from __future__ import annotations
 
-class TournamentState:
-    instance: TournamentState = None
-
+class Tournament:
     def __init__(self):
         self.pros: dict[str, Person] = {}
         self.amateurs: dict[str, Person] = {}
         self.tournamentmaps: dict[str, TournamentMap] = {}
-        TournamentState.instance = self
 
     def is_running(self) -> bool:
         return len(self.tournamentmaps) > 0
@@ -75,6 +71,3 @@ class TournamentState:
         if beatmapset_id in self.tournamentmaps:
             return self.tournamentmaps[beatmapset_id]
         return None
-
-
-TournamentState()

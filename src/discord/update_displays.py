@@ -2,14 +2,14 @@ from discord import TextChannel, Message
 from discord.ext.commands import Bot
 
 from . import bot_config, leaderboards
-from ..tournament.tournament_state import TournamentState
+from ..tournament import state
 
 
 async def update_display(bot: Bot) -> None:
     display_channel = bot.get_channel(bot_config.display_channel())
     discord_messages = await get_discord_messages(display_channel, 1)
 
-    if not TournamentState.instance.is_running():
+    if not state.tournament.is_running():
         await discord_messages[0].edit(content="Tourney not currently running!")
         return
 
@@ -18,24 +18,22 @@ async def update_display(bot: Bot) -> None:
 
 
 def make_display_message() -> str:
-    state = TournamentState.instance
-
     message = "**REGISTERED**\n"
-    pro_names = [person.player.username for person in state.get_pros()]
-    amateur_names = [person.player.username for person in state.get_amateurs()]
+    pro_names = [person.player.username for person in state.tournament.get_pros()]
+    amateur_names = [person.player.username for person in state.tournament.get_amateurs()]
     message += f"Pros: {', '.join(pro_names)}\nAmateurs: {', '.join(amateur_names)}\n"
 
     message += "\n**BEATMAPS**\n"
-    for tournamentmap in state.get_tournamentmaps():
+    for tournamentmap in state.tournament.get_tournamentmaps():
         beatmapset_id = tournamentmap.beatmapset.beatmapset_id
         beatmapset_name = tournamentmap.beatmapset.ascii_name
         mods_string = "".join(tournamentmap.mods)
 
         message += f"{mods_string}: <https://osu.ppy.sh/beatmapsets/{beatmapset_id}> ({beatmapset_name})\n"
     message += "\n**PRO STANDINGS**\n"
-    message += leaderboards.get_total_leaderboards(state.get_pros())
+    message += leaderboards.get_total_leaderboards(state.tournament.get_pros())
     message += "\n**AMATEUR STANDINGS**\n"
-    message += leaderboards.get_total_leaderboards(state.get_amateurs())
+    message += leaderboards.get_total_leaderboards(state.tournament.get_amateurs())
 
     return message
 
@@ -44,7 +42,7 @@ async def update_detailed_display(bot: Bot) -> None:
     detail_channel: TextChannel = bot.get_channel(bot_config.detail_channel())
     discord_messages = await get_discord_messages(detail_channel, 2)
 
-    if not TournamentState.instance.is_running():
+    if not state.tournament.is_running():
         await discord_messages[0].edit(content="Tourney not currently running!")
         await discord_messages[1].edit(content=".")
         return
@@ -55,11 +53,10 @@ async def update_detailed_display(bot: Bot) -> None:
 
 
 def make_detailed_display_messages() -> tuple[str, str]:
-    state = TournamentState.instance
     message_pros = "**PROS**\n\n"
-    message_pros += leaderboards.get_map_leaderboards(state.get_pros())
+    message_pros += leaderboards.get_map_leaderboards(state.tournament.get_pros())
     message_ams = "------------------\n**AMATEURS**\n\n"
-    message_ams += leaderboards.get_map_leaderboards(state.get_amateurs())
+    message_ams += leaderboards.get_map_leaderboards(state.tournament.get_amateurs())
     return message_pros, message_ams
 
 

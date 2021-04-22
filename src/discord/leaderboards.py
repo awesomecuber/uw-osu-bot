@@ -2,12 +2,12 @@ from typing import Any
 
 from ..osu_api.score import Score
 from ..tournament.person import Person
-from ..tournament.tournament_state import TournamentState
+from ..tournament import state
 from ..utils.sanitizer import sanitize
 
 
 def get_total_leaderboards(people: list[Person]) -> str:
-    tournamentmaps = TournamentState.instance.get_tournamentmaps()
+    tournamentmaps = state.tournament.get_tournamentmaps()
     beatmapset_ids = [tournamentmap.beatmapset.beatmapset_id for tournamentmap in tournamentmaps]
 
     people_norm_pointss = get_people_normalized_points(people, beatmapset_ids)
@@ -24,7 +24,7 @@ def get_total_leaderboards(people: list[Person]) -> str:
 
 def get_map_leaderboards(people: list[Person]) -> str:
     message = ""
-    for tournamentmap in TournamentState.instance.get_tournamentmaps():
+    for tournamentmap in state.tournament.get_tournamentmaps():
         beatmapset = tournamentmap.beatmapset
         beatmapset_id = beatmapset.beatmapset_id
 
@@ -73,7 +73,7 @@ def get_beatmapset_normalized_points(people: list[Person], beatmapset_id: int) -
         max_points = 1
 
     # most possible points for this beatmapset
-    normalization_constant = 1000.0 / len(TournamentState.instance.get_tournamentmaps())
+    normalization_constant = 1000.0 / len(state.tournament.get_tournamentmaps())
 
     return {person: normalization_constant * pointss[person] / max_points for person in people}
 

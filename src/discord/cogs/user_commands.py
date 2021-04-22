@@ -1,11 +1,10 @@
 from discord.ext.commands import Bot, Cog, command, Context
 
 from ...osu_api import api_helper
-from ...tournament import registration
-from ...tournament.tournament_state import TournamentState
+from ...tournament import registration, state
 from ...utils import update_manager
 
-
+# TODO: sanitize usernames in here
 class UserCommands(Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
@@ -25,12 +24,11 @@ class UserCommands(Cog):
     @command(name="getrank")
     async def get_rank(self, ctx: Context, *, username: str):
         player = await api_helper.get_player_by_username(username)
-        await ctx.channel.send(f"{username} is rank #{player.rank}.")
+        await ctx.channel.send(f"{player.username} is rank #{player.rank}.")
 
     @command()
     async def identify(self, ctx: Context):
-        state = TournamentState.instance
-        registered_person = state.get_person_by_discord_id(ctx.author.id)
+        registered_person = state.tournament.get_person_by_discord_id(ctx.author.id)
         if registered_person is None:
             await ctx.channel.send("You're not registered!")
             return

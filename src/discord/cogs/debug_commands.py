@@ -1,7 +1,7 @@
 from discord.ext.commands import Bot, Cog, command, Context
 
 from .. import bot_config
-from ...tournament.tournament_state import TournamentState
+from ...tournament import state
 
 
 class DebugCommands(Cog):
@@ -12,4 +12,4 @@ class DebugCommands(Cog):
     async def print_state(self, ctx: Context):
         if ctx.author.id != bot_config.admin_id():
             return
-        print(TournamentState.instance)
+        print(state.tournament)
