@@ -1,7 +1,7 @@
 class Score:
     def __init__(self, play_json):
-        self.sr = 0  # type: float
-        self.pp = 0  # type: float
+        self.sr: float = 0
+        self.pp: float = 0
 
         if play_json is not None:
             self.sr = play_json["pp"] or 0

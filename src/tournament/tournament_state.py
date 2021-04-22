@@ -1,16 +1,17 @@
-from typing import Dict, List, Optional
+from typing import Optional
 
 from .person import Person
 from .tournament_map import TournamentMap
 
+from __future__ import annotations
 
 class TournamentState:
-    instance = None  # type: TournamentState
+    instance: TournamentState = None
 
     def __init__(self):
-        self.pros = {}  # type: Dict[str: Person]
-        self.amateurs = {}  # type: Dict[str: Person]
-        self.tournamentmaps = {}  # type: Dict[str: TournamentMap]
+        self.pros: dict[str, Person] = {}
+        self.amateurs: dict[str, Person] = {}
+        self.tournamentmaps: dict[str, TournamentMap] = {}
         TournamentState.instance = self
 
     def is_running(self) -> bool:
@@ -36,16 +37,16 @@ class TournamentState:
         elif player_id in self.amateurs:
             self.amateurs.pop(player_id)
 
-    def get_all_people(self) -> List[Person]:
-        output = []  # type: List[Person]
+    def get_all_people(self) -> list[Person]:
+        output: list[Person] = []
         output.extend(self.pros.values())
         output.extend(self.amateurs.values())
         return output
 
-    def get_pros(self) -> List[Person]:
+    def get_pros(self) -> list[Person]:
         return list(self.pros)
 
-    def get_amateurs(self) -> List[Person]:
+    def get_amateurs(self) -> list[Person]:
         return list(self.amateurs)
 
     def get_person_by_player_id(self, player_id: int) -> Optional[Person]:
@@ -67,7 +68,7 @@ class TournamentState:
                 return person
         return None
 
-    def get_tournamentmaps(self) -> List[TournamentMap]:
+    def get_tournamentmaps(self) -> list[TournamentMap]:
         return list(self.tournamentmaps.values())
 
     def get_tournamentmap_by_beatmapset_id(self, beatmapset_id: int) -> Optional[TournamentMap]:

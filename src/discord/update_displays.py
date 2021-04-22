@@ -1,5 +1,3 @@
-from typing import Tuple, List
-
 from discord import TextChannel, Message
 from discord.ext.commands import Bot
 
@@ -56,7 +54,7 @@ async def update_detailed_display(bot: Bot) -> None:
     await discord_messages[0].edit(content=message_ams)
 
 
-def make_detailed_display_messages() -> Tuple[str, str]:
+def make_detailed_display_messages() -> tuple[str, str]:
     state = TournamentState.instance
     message_pros = "**PROS**\n\n"
     message_pros += leaderboards.get_map_leaderboards(state.get_pros())
@@ -65,7 +63,7 @@ def make_detailed_display_messages() -> Tuple[str, str]:
     return message_pros, message_ams
 
 
-async def get_discord_messages(channel: TextChannel, number: int) -> List[Message]:
+async def get_discord_messages(channel: TextChannel, number: int) -> list[Message]:
     messages = await channel.history(limit=number).flatten()
 
     if len(messages) < number:

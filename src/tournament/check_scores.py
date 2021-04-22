@@ -1,12 +1,10 @@
-from typing import List
-
 from .test_valid_play import is_valid_play
 from ..osu_api import api_helper
 from ..osu_api.score import Score
 from ..tournament.tournament_state import TournamentState
 
 
-async def check_player_scores(player_id: int) -> List[str]:
+async def check_player_scores(player_id: int) -> list[str]:
     state = TournamentState.instance
 
     person = state.get_person_by_player_id(player_id)
@@ -21,7 +19,7 @@ async def check_player_scores(player_id: int) -> List[str]:
 
         new_score = Score(valid_play_json)
 
-        current_play = person.scores[beatmapset_id]  # type: Score
+        current_play: Score = person.scores[beatmapset_id]
         if current_play.calculate_points() < new_score.calculate_points():
             person.scores[beatmapset_id] = new_score
 

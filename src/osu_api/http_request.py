@@ -1,5 +1,5 @@
 import aiohttp
-from typing import Any, Dict, List
+from typing import Any
 
 
 async def post(url: str, data):
@@ -9,14 +9,14 @@ async def post(url: str, data):
             return response_json
 
 
-async def get(url: str, headers: Dict[str, Any], params: Dict[str, Any]):
+async def get(url: str, headers: dict[str, Any], params: dict[str, Any]):
     async with aiohttp.ClientSession() as session:
         async with session.get(url, headers=headers, params=params) as response:
             response_json = await response.json()
             return response_json
 
 
-async def get_many(urls: List[str], headerss: List[Dict[str, Any]], paramss: List[Dict[str, Any]]) -> List[Any]:
+async def get_many(urls: list[str], headerss: list[dict[str, Any]], paramss: list[dict[str, Any]]) -> list[Any]:
     async with aiohttp.ClientSession() as session:
         result = []
 

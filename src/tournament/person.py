@@ -1,14 +1,12 @@
-from typing import Dict
-
 from ..osu_api.player import Player
 from ..osu_api.score import Score
 
 
 class Person:
     def __init__(self, discord_id: int, player: Player):
-        self.discord_id = discord_id  # type: int
-        self.player = player  # type: Player
-        self.scores = {}  # type: Dict[int, Score]
+        self.discord_id: int = discord_id
+        self.player: Player = player
+        self.scores: dict[int, Score] = {}
         self.reset_scores()
 
     def reset_scores(self) -> None:

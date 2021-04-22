@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any
 
 import aiohttp
 
@@ -18,22 +18,22 @@ async def get_token() -> str:
     return result["access_token"]
 
 
-def headers() -> Dict[str, str]:
+def headers() -> dict[str, str]:
     token = token_handler.get_token()
     return {"Authorization": f"Bearer {token}"}
 
 
-async def get(url: str, params: Dict[str, Any]) -> str:
+async def get(url: str, params: dict[str, Any]) -> str:
     result = await http_request.get(url, headers(), params)
     return result
 
 
-async def get_many(urls: List[str], params: List[Dict[str, Any]]) -> List:
+async def get_many(urls: list[str], params: list[dict[str, Any]]) -> list[str]:
     result = await http_request.get_many(urls, [headers() for _ in urls], params)
     return result
 
 
-async def get_ranked_beatmapsets(mode_num: int, sql_dates: List[str]) -> List[Beatmapset]:
+async def get_ranked_beatmapsets(mode_num: int, sql_dates: list[str]) -> list[Beatmapset]:
     results = []
     async with aiohttp.ClientSession() as session:
         for date in sql_dates:
