@@ -1,1 +1,1 @@
-python -m src.discord.bot debug
+python -m uwosubot.bot
