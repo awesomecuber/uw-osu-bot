@@ -4,8 +4,8 @@ class Score:
         self.pp: float = 0
 
         if play_json is not None:
-            self.sr = play_json["pp"] or 0
-            self.pp = play_json["beatmap"]["difficulty_rating"]
+            self.sr = play_json["beatmap"]["difficulty_rating"]
+            self.pp = play_json["pp"] or 0
 
     def calculate_points(self) -> float:
         return self.pp * (self.sr ** 2)

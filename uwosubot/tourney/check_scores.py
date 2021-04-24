@@ -25,7 +25,7 @@ async def check_player_scores(player_id: int) -> list[str]:
             difficulty_name = valid_play_json['beatmap']['version']
             song_name = valid_play_json['beatmapset']['title_unicode']
             output.append(
-                f"{username} got {new_score.pp}pp on \"{difficulty_name}\" difficulty ({new_score.sr}*)"
+                f"{username} got {new_score.pp:.0f}pp on \"{difficulty_name}\" difficulty ({new_score.sr}*)"
                 f" of \"{song_name}\"! This results in a score of {new_score.calculate_points():.1f}."
             )
 
