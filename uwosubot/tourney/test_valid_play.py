@@ -1,4 +1,4 @@
-from . import state
+from .. import state
 
 
 def is_valid_play(play_json) -> bool:

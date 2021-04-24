@@ -4,9 +4,8 @@ import sys
 
 from discord.ext import commands
 
-from . import bot_config
-from ..tournament import tournament_save_handler
-from ..utils import update_manager
+from . import bot_config, state_save_handler
+from .utils import update_manager
 
 from .cogs.admin_commands import AdminCommands
 from .cogs.debug_commands import DebugCommands
@@ -37,7 +36,7 @@ async def on_ready():
     # Initialize state
     if os.path.isfile("state"):
         print("Attempting to load state from file...")
-        tournament_save_handler.load_tournament()
+        state_save_handler.load_tournament()
         print("State loading complete")
     else:
         print("No state file found")

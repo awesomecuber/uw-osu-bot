@@ -1,9 +1,9 @@
 from typing import Any
 
-from ..osu_api.score import Score
-from ..tournament.person import Person
-from ..tournament import state
-from ..utils.sanitizer import sanitize
+from .osu_api.score import Score
+from .tourney.person import Person
+from . import state
+from .utils.sanitizer import sanitize
 
 
 def get_total_leaderboards(people: list[Person]) -> str:

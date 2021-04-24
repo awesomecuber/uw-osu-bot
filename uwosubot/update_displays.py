@@ -2,7 +2,7 @@ from discord import TextChannel, Message
 from discord.ext.commands import Bot
 
 from . import bot_config, leaderboards
-from ..tournament import state
+from . import state
 
 
 async def update_display(bot: Bot) -> None:

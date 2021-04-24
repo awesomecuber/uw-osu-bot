@@ -1,4 +1,4 @@
-from . import state
+from .. import state
 from .test_valid_play import is_valid_play
 from ..osu_api import api_helper
 from ..osu_api.score import Score

@@ -1,5 +1,5 @@
 from .person import Person
-from . import state
+from .. import state
 from ..osu_api import api_helper
 
 

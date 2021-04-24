@@ -1,8 +1,9 @@
 from discord.ext.commands import Bot, Cog, command, Context
 
-from ...osu_api import api_helper
-from ...tournament import registration, state
-from ...utils import update_manager
+from .. import state
+from ..osu_api import api_helper
+from ..tourney import registration
+from ..utils import update_manager
 
 # TODO: sanitize usernames in here
 class UserCommands(Cog):

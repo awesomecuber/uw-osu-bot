@@ -40,10 +40,10 @@ class Tournament:
         return output
 
     def get_pros(self) -> list[Person]:
-        return list(self.pros)
+        return list(self.pros.values())
 
     def get_amateurs(self) -> list[Person]:
-        return list(self.amateurs)
+        return list(self.amateurs.values())
 
     def get_person_by_player_id(self, player_id: int) -> Optional[Person]:
         if player_id in self.pros:

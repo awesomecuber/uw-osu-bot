@@ -1,10 +1,9 @@
 from discord.ext import tasks
 from discord.ext.commands import Bot, Cog
-from .. import bot_config
-from ...osu_api import api_helper
-from ...tournament import state
-from ...tournament.check_scores import check_player_scores
-from ...utils import update_manager
+from .. import bot_config, state
+from ..osu_api import api_helper
+from ..tourney.check_scores import check_player_scores
+from ..utils import update_manager
 
 
 class RecurrentTasks(Cog):

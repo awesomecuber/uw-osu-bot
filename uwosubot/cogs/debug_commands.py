@@ -1,7 +1,7 @@
 from discord.ext.commands import Bot, Cog, command, Context
 
 from .. import bot_config
-from ...tournament import state
+from .. import state
 
 
 class DebugCommands(Cog):

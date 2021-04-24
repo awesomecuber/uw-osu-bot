@@ -3,9 +3,9 @@ from typing import List
 
 from discord.ext.commands import Bot, Cog, command, Context
 
-from .. import bot_config
-from ...tournament import good_beatmapsets, manage_tournament, state
-from ...utils import update_manager
+from .. import bot_config, state
+from ..tourney import good_beatmapsets, manage_tournament
+from ..utils import update_manager
 
 
 class AdminCommands(Cog):
