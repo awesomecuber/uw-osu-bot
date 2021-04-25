@@ -45,7 +45,7 @@ async def get_ranked_beatmapsets(mode_num: int, sql_dates: list[str]) -> list[Be
                     "q": f"created={date}",
                     "page": cur_page
                 }
-                response = await session.get("beatmapsets/search", params=params, headers=headers())
+                response = await session.get(api_urls.beatmapset_search(), params=params, headers=headers())
                 beatmapsets_jsons = await response.json()
                 beatmapsets_json = beatmapsets_jsons["beatmapsets"]
                 for beatmapset_json in beatmapsets_json:

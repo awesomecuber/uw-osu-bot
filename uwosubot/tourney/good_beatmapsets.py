@@ -20,6 +20,6 @@ async def get_good_beatmapsets(mode: str, months: list[str]) -> list[Beatmapset]
 
     results = []
     for beatmapset in beatmapsets:
-        if beatmapset.difficulty_count >= 5 and beatmapset.difficulty_count >= 6:
+        if beatmapset.difficulty_count >= 5 and beatmapset.max_sr >= 5:
             results.append(beatmapset)
     return results

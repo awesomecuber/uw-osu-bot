@@ -19,3 +19,6 @@ def recent_scores_by_id(player_id: int) -> str:
 
 def beatmapset(beatmapset_id: int) -> str:
     return base_url + f"beatmapsets/{beatmapset_id}"
+
+def beatmapset_search() -> str:
+    return base_url + "beatmapsets/search"

@@ -1,9 +1,9 @@
 import random
-from typing import List
 
 from discord.ext.commands import Bot, Cog, command, Context
 
 from .. import bot_config, state
+from ..osu_api.beatmapset import Beatmapset
 from ..tourney import good_beatmapsets, manage_tournament
 from ..utils import update_manager
 
@@ -13,17 +13,17 @@ class AdminCommands(Cog):
         self.bot = bot
 
     @command(name="getrandom")
-    async def get_random(self, ctx: Context, mode: str, months: List[str]):
+    async def get_random(self, ctx: Context, mode: str, *months: str):
         if ctx.author.id != bot_config.admin_id():
             return
 
-        good_bmss = await good_beatmapsets.get_good_beatmapsets(mode, months)
+        good_bmss: list[Beatmapset] = await good_beatmapsets.get_good_beatmapsets(mode, months)
         random.shuffle(good_bmss)
         good_bmss = good_bmss[:4]
 
         message = ""
         for bms in good_bmss:
-            message += f"<https://osu.ppy.sh/beatmapsets/{bms}>\n"
+            message += f"<https://osu.ppy.sh/beatmapsets/{bms.beatmapset_id}>\n"
         await ctx.channel.send(message)
 
     # a set_code is the mapset id concatenated with the mod, like "294227NM"

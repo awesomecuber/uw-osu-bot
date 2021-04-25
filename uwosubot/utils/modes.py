@@ -1,11 +1,11 @@
 def get_id(mode_name: str) -> int:
     if mode_name == "standard" or mode_name == "std":
         return 0
-    elif mode_name == "mania":
+    elif mode_name == "catch" or mode_name == "catchthebeat" or mode_name == "catch the beat" or mode_name == "ctb":
         return 1
     elif mode_name == "taiko":
         return 2
-    elif mode_name == "catch" or mode_name == "catchthebeat" or mode_name == "catch the beat" or mode_name == "ctb":
+    elif mode_name == "mania":
         return 3
     else:
         return -1
