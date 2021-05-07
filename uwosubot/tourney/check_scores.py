@@ -30,11 +30,11 @@ async def check_player_scores(player_id: int) -> list[discord.Embed]:
             play_url = f"https://osu.ppy.sh/scores/osu/{valid_play_json['best_id']}"
             description = f"{song_name}: {difficulty_name} ({new_score.sr})"
 
-            user_profile = f"https://osu.ppy.sh/users/{valid_play_json['best_id']}/osu"
+            user_profile = f"https://osu.ppy.sh/users/{valid_play_json['user_id']}/osu"
             icon_url = valid_play_json["user"]["avatar_url"]
 
-            embed=discord.Embed(title="Top Score!", url=play_url, description=description, color=0x1eff00)
-            embed.set_author(name=f"{username}", url=user_profile, icon_url=icon_url)
+            embed=discord.Embed(title="Top Score!", url=user_profile, description=description, color=0x1eff00)
+            embed.set_author(name=f"{username}", url=play_url, icon_url=icon_url)
             embed.add_field(name="ACC", value=f"{new_score.acc * 100:.2f}%", inline=True)
             embed.add_field(name="COMBO", value=f"{new_score.max_combo}/{new_score.max_possible_combo}", inline=True)
             embed.add_field(name="MISSES", value=f"{new_score.misses}x", inline=True)
