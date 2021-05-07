@@ -13,14 +13,14 @@ class UserCommands(Cog):
     @command()
     async def register(self, ctx: Context, *, player_name: str):
         msg = await registration.register(ctx.author.id, player_name)
-        await update_manager.update(self.bot)
         await ctx.channel.send(msg)
+        await update_manager.update(self.bot)
 
     @command()
     async def unregister(self, ctx: Context):
         msg = registration.unregister(ctx.author.id)
-        await update_manager.update(self.bot)
         await ctx.channel.send(msg)
+        await update_manager.update(self.bot)
 
     @command(name="getrank")
     async def get_rank(self, ctx: Context, *, username: str):

@@ -21,15 +21,12 @@ class RecurrentTasks(Cog):
             return
 
         for person in state.tournament.get_all_people():
-            update_strings = await check_player_scores(person.player.player_id)
-            for update_string in update_strings:
-                await self._announce(update_string)
+            update_embeds = await check_player_scores(person.player.player_id)
+            for update_embed in update_embeds:
+                channel = self.bot.get_channel(bot_config.announce_channel())
+                await channel.send(embed=update_embed)
 
         await update_manager.update(self.bot)
-
-    async def _announce(self, msg: str) -> None:
-        channel = self.bot.get_channel(bot_config.announce_channel())
-        await channel.send(msg)
 
     @tasks.loop(minutes=1)
     async def time_check(self):
