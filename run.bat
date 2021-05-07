@@ -1,1 +1,1 @@
-python -m uwosubot.bot
+py -m uwosubot.bot
