@@ -1,8 +1,8 @@
 from discord import TextChannel, Message
 from discord.ext.commands import Bot
 
-from . import bot_config, leaderboards
-from . import state
+from . import bot_config, leaderboards, state
+from .utils.sanitizer import sanitize
 
 
 async def update_display(bot: Bot) -> None:
@@ -19,14 +19,14 @@ async def update_display(bot: Bot) -> None:
 
 def make_display_message() -> str:
     message = "**REGISTERED**\n"
-    pro_names = [person.player.username for person in state.tournament.get_pros()]
-    amateur_names = [person.player.username for person in state.tournament.get_amateurs()]
+    pro_names = [sanitize(person.player.username) for person in state.tournament.get_pros()]
+    amateur_names = [sanitize(person.player.username) for person in state.tournament.get_amateurs()]
     message += f"Pros: {', '.join(pro_names)}\nAmateurs: {', '.join(amateur_names)}\n"
 
     message += "\n**BEATMAPS**\n"
     for tournamentmap in state.tournament.get_tournamentmaps():
         beatmapset_id = tournamentmap.beatmapset.beatmapset_id
-        beatmapset_name = tournamentmap.beatmapset.ascii_name
+        beatmapset_name = sanitize(tournamentmap.beatmapset.ascii_name)
         mods_string = "".join(tournamentmap.mods)
 
         message += f"{mods_string}: <https://osu.ppy.sh/beatmapsets/{beatmapset_id}> ({beatmapset_name})\n"
