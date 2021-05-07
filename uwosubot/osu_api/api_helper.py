@@ -1,9 +1,10 @@
 import asyncio
 
-from . import api_request, api_urls, token_handler
+from . import api_request, token_handler
 from .beatmapset import Beatmapset
 from .player import Player
 
+BASE_URL = "https://osu.ppy.sh/api/v2/"
 
 async def regen_token() -> None:
     token = await api_request.get_token()
@@ -11,24 +12,24 @@ async def regen_token() -> None:
 
 
 async def get_player_by_username(username: str) -> Player:
-    url = api_urls.user_by_username(username)
+    url = BASE_URL + f"users/{username}/osu"
     player_json = await api_request.get(url, {"key": "username"})
     return Player(player_json)
 
 
 async def get_player_by_id(player_id: int) -> Player:
-    url = api_urls.user_by_id(player_id)
+    url = BASE_URL + f"users/{player_id}"
     player_json = await api_request.get(url, {"key": "id"})
     return Player(player_json)
 
 
 async def get_recent(player_id: int):
-    url = api_urls.recent_scores_by_id(player_id)
-    return await api_request.get(url, {})
+    url = BASE_URL + f"users/{player_id}/scores/recent"
+    return await api_request.get(url, {"mode": "osu"})
 
 
 async def get_beatmapsets(beatmapset_ids: list[int]) -> list[Beatmapset]:
-    urls = [api_urls.beatmapset(beatmapset_id) for beatmapset_id in beatmapset_ids]
+    urls = [BASE_URL + f"beatmapsets/{beatmapset_id}" for beatmapset_id in beatmapset_ids]
     beatmapset_jsons = await api_request.get_many(urls, [{} for _ in urls])
     return [Beatmapset(beatmapset_json) for beatmapset_json in beatmapset_jsons]
 

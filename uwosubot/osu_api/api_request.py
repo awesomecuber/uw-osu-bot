@@ -2,9 +2,10 @@ from typing import Any
 
 import aiohttp
 
-from . import api_config, api_urls, http_request, token_handler
+from . import api_config, http_request, token_handler
 from .beatmapset import Beatmapset
 
+BASE_URL = "https://osu.ppy.sh/api/v2/"
 
 async def get_token() -> str:
     data = {
@@ -14,7 +15,7 @@ async def get_token() -> str:
         "scope": "public"
     }
 
-    result = await http_request.post(api_urls.token(), data)
+    result = await http_request.post("https://osu.ppy.sh/oauth/token", data)
     return result["access_token"]
 
 
@@ -45,7 +46,7 @@ async def get_ranked_beatmapsets(mode_num: int, sql_dates: list[str]) -> list[Be
                     "q": f"created={date}",
                     "page": cur_page
                 }
-                response = await session.get(api_urls.beatmapset_search(), params=params, headers=headers())
+                response = await session.get(BASE_URL + "beatmapsets/search", params=params, headers=headers())
                 beatmapsets_jsons = await response.json()
                 beatmapsets_json = beatmapsets_jsons["beatmapsets"]
                 for beatmapset_json in beatmapsets_json:
