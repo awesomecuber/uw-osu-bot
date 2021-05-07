@@ -43,6 +43,6 @@ def get_pairs(s: str) -> list[str]:
 
 
 def stop_tournament() -> None:
-    state.tournament.beatmaps = {}
+    state.tournament.tournamentmaps = {}
     for person in state.tournament.get_all_people():
         person.reset_scores()
