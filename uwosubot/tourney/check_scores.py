@@ -28,7 +28,7 @@ async def check_player_scores(player_id: int) -> list[discord.Embed]:
             song_name = valid_play_json['beatmapset']['title_unicode']
 
             play_url = f"https://osu.ppy.sh/scores/osu/{valid_play_json['best_id']}"
-            description = f"{song_name}: {difficulty_name} ({new_score.sr})"
+            description = f"{song_name}: {difficulty_name} ({new_score.sr}*)"
 
             user_profile = f"https://osu.ppy.sh/users/{valid_play_json['user_id']}/osu"
             icon_url = valid_play_json["user"]["avatar_url"]
