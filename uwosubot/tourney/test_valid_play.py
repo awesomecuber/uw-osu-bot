@@ -8,10 +8,6 @@ def is_valid_play(play_json) -> bool:
     if tournament_map is None:
         return False
 
-    # Was up for pp?
-    if play_json["pp"] is None:
-        return False
-
     required_mods = tournament_map.mods
     play_mods = play_json["mods"]
 
