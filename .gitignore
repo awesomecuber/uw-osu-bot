@@ -9,6 +9,7 @@ state-backup
 # Other stuff
 help.py
 convert_beatmaps.py
+apitest.py
 
 # Ignore .vscode and .idea
 .*
