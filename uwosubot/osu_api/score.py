@@ -26,8 +26,11 @@ class Score:
 
     # score doesn't take into account the difficulty of the map
     def calculate_score(self) -> float:
-        acc_part = self.acc ** 10
-        combo_part = (0.95 ** self.misses) * (self.max_combo / self.max_possible_combo)
+        acc_part = self.acc ** 8
+        combo_frac = self.max_combo / self.max_possible_combo
+        # https://i.imgur.com/l6slHFp.png
+        combo_part = (4/5) * (combo_frac ** (1/2)) + (1/5) * (combo_frac ** 10)
+        combo_part *= (0.96 ** self.misses)
         return acc_part * 500 + combo_part * 500 # total of 1000
 
     @staticmethod

@@ -46,7 +46,7 @@ class Tournament:
         return list(self.amateurs.values())
 
     def get_person_by_player_id(self, player_id: int) -> Optional[Person]:
-        if player_id in self.pros:
+        if player_id in self.pros: # TODO: could use get_all_people
             return self.pros[player_id]
         elif player_id in self.amateurs:
             return self.amateurs[player_id]

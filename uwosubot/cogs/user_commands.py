@@ -2,7 +2,7 @@ from discord.ext.commands import Bot, Cog, command, Context
 
 from .. import state
 from ..osu_api import api_helper
-from ..tourney import registration
+from ..tourney import check_scores, registration, test_valid_play
 from ..utils import update_manager
 
 # TODO: sanitize usernames in here
@@ -26,6 +26,17 @@ class UserCommands(Cog):
     async def get_rank(self, ctx: Context, *, username: str):
         player = await api_helper.get_player_by_username(username)
         await ctx.channel.send(f"{player.username} is rank #{player.rank}.")
+
+    @command(name="getlastplay")
+    async def get_last_play(self, ctx: Context):
+        person = state.tournament.get_person_by_discord_id(ctx.author.id)
+        recent_plays_json = await api_helper.get_recent(person.player.player_id)
+        valid_plays_jsons = [play_json for play_json in recent_plays_json if test_valid_play.is_valid_play(play_json)]
+        if len(valid_plays_jsons) == 0:
+            await ctx.channel.send("You haven't set any valid plays recently!")
+        else:
+            last_play_json = valid_plays_jsons[0]
+            await ctx.channel.send(embed=check_scores.get_embed(person, last_play_json))
 
     @command()
     async def identify(self, ctx: Context):
